@@ -1,4 +1,28 @@
-# This Python file uses the following encoding: utf-8
+from PySide2.QtCore import *
+from PySide2.QtGui import QKeySequence
+from PySide2.QtWidgets import QMainWindow, QAction
 
-# if__name__ == "__main__":
-#     pass
+
+class MainWindow(QMainWindow):
+    def __init__(self, widget):
+        QMainWindow.__init__(self)
+        self.setWindowTitle("Eartquakes information")
+        self.setCentralWidget(widget)
+        # Menu
+        self.menu = self.menuBar()
+        self.file_menu = self.menu.addMenu("File")
+
+        ## Exit QAction
+        exit_action = QAction("Exit", self)
+        exit_action.setShortcut(QKeySequence.Quit)
+        exit_action.triggered.connect(self.close)
+
+        self.file_menu.addAction(exit_action)
+
+        # Status Bar
+        self.status = self.statusBar()
+        self.status.showMessage("Data loaded and plotted")
+
+        # Window dimensions
+        geometry = qApp.desktop().availableGeometry(self)
+        self.setFixedSize(geometry.width() * 1, geometry.height() * 1)
