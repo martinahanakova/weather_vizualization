@@ -2,36 +2,33 @@ from PySide2.QtWidgets import QWidget, QLabel
 from PySide2.QtGui import QPixmap, QImage, QPainter
 from PySide2.QtCore import QByteArray, Qt
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
 import plotly.express as px
 import pandas as pd
 import numpy as np
 
 
 class WindrosePlot(QWidget):
-    def __init__(self, data):
+    def __init__(self, data, city):
         super(WindrosePlot, self).__init__()
 
         self.data = data
-
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
+        self.city = city
 
     def paintEvent(self, event):
-        wind_data = self.process_data(self.data)
+        wind_data = self.process_data(self.data, self.city)
 
         painter = QPainter(self)
 
         figure = px.bar_polar(wind_data, r="frequency", theta="direction",\
                            color="wind_speed", template="plotly_dark",\
-                           color_discrete_sequence= px.colors.sequential.Plasma)
+                           )
 
         figure.update_layout({
                     'plot_bgcolor': 'rgba(0, 0, 0, 0)',
                     'paper_bgcolor': 'rgba(0, 0, 0, 0)',
                     })
+
+        figure.update_layout(legend=dict(font=dict(size=50)))
 
         img_bytes = QByteArray()
         img_bytes = figure.to_image(format="png")
@@ -45,8 +42,10 @@ class WindrosePlot(QWidget):
 
         painter.drawPixmap(0, 0, pixmap)
 
-    def process_data(self, data):
-        filtered_city = data[data['city'] == "Atlanta"]
+        painter.end()
+
+    def process_data(self, data, city):
+        filtered_city = data[data['city'] == city]
 
         data = data[['wind_speed', 'wind_direction']]
         data_len = len(data)

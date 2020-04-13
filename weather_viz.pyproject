@@ -1,3 +1,3 @@
 {
-    "files": ["weather_viz.py","polar_plot.py","detail_widget.py","windrose_plot.py","detail_window.py","polar_widget.py","window.py","table_model.py","main_widget.py","main_window.py","spiral.py"]
+    "files": ["weather_viz.py","main_window.py","detail_widget.py","polar_widget.py","window.py","windrose_plot.py","spiral.py","table_model.py","detail_window.py","polar_plot.py","main_widget.py","humidity_plot.py"]
 }

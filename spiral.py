@@ -22,16 +22,16 @@ class Spiral(QWidget):
         painter = QPainter(self)
 
         pi = 3.141592654
-        data_points_count, colors, attribute_values, values = self.process_data(self.data, self.city, self.attribute)
+        data_points_count, colors, attribute_values, values, months = self.process_data(self.data, self.city, self.attribute)
 
         rotations = int(numpy.floor(data_points_count/12))
         spiral_points = (data_points_count//12)*12
 
         radius_min = 0.1
-        radius_max = 0.8
+        radius_max = 0.7
 
-        element_size_min = 6
-        element_size_max = 8
+        element_size_min = 5
+        element_size_max = 7
 
         for i in range(spiral_points):
             angle = -2.0*pi * i / spiral_points
@@ -61,6 +61,22 @@ class Spiral(QWidget):
             painter.setPen(QPen(Qt.black, 2, Qt.SolidLine))
             painter.drawEllipse(x_t, y_t, circle_radius, circle_radius)
 
+        for i in range(12):
+            text = months[i]
+            angle = -2.0*pi * i / 12
+            k = i / 12
+
+            radius = 1.25*radius_max
+
+            x = radius*numpy.sin(angle)
+            y = radius*numpy.cos(angle)
+
+            x_t = int(3*width/4*(x + 1.0)/2.0)
+            y_t = int(height*(y + 1.1)/2.0)
+
+            painter.setPen(QPen(Qt.white, 2, Qt.SolidLine))
+            painter.drawText(x_t, y_t, text)
+
         # Create Colorbar Legend
         brush = QBrush()
         brush.setStyle(Qt.SolidPattern)
@@ -88,6 +104,8 @@ class Spiral(QWidget):
             painter.fillRect(rect, brush)
             painter.drawText(text_x, text_y, text)
 
+        painter.end()
+
     def process_data(self, data, city, attribute):
         data['datetime'] = pd.to_datetime(data['datetime'])
         data['month_year'] = data['datetime'].dt.to_period('M')
@@ -114,6 +132,8 @@ class Spiral(QWidget):
 
         att_data = att_data.groupby('month_year').agg({attribute : 'mean'})
 
+        att_data = att_data.reset_index()
+
         values = numpy.array([min_value, min_value + 1*step, min_value + 2*step, min_value + 3*step, \
         min_value + 4*step, min_value + 5*step, max_value])
 
@@ -122,18 +142,11 @@ class Spiral(QWidget):
         att_data['color'] = att_data['index'].apply(lambda x: attribute_values.get(x))
 
         att_data = att_data.reset_index(drop='True')
+        att_data['month'] = att_data['month_year'].dt.month
 
-        return data_points_count, att_data['color'], attribute_values, values
+        months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", \
+        7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
 
+        att_data['month'] = att_data['month'].apply(lambda x: months.get(x))
 
-    #class ColorMap: public QwtLinearColorMap
-    #{
-    #public:
-        #ColorMap():
-           # QwtLinearColorMap( Qt::darkCyan, Qt::red )
-      #  {
-           # addColorStop( 0.1, Qt::cyan );
-           # addColorStop( 0.6, Qt::green );
-           # addColorStop( 0.95, Qt::yellow );
-      #  }
-   # };
+        return data_points_count, att_data['color'], attribute_values, values, att_data['month']
