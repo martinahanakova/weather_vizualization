@@ -15,40 +15,27 @@ class Widget(QWidget):
         QWidget.__init__(self)
 
         # Getting the Model
-        #self.model = CustomTableModel(data)
+        self.model = CustomTableModel(data)
 
         # Creating a QTableView
-        #self.table_view = QTableView()
-        #self.table_view.setModel(self.model)
+        self.table_view = QTableView()
+        self.table_view.setModel(self.model)
 
         # QTableView Headers
-        #resize = QHeaderView.ResizeToContents
-        #self.horizontal_header = self.table_view.horizontalHeader()
-        #self.vertical_header = self.table_view.verticalHeader()
-        #self.horizontal_header.setSectionResizeMode(resize)
-        #self.vertical_header.setSectionResizeMode(resize)
-        #self.horizontal_header.setStretchLastSection(True)
+        resize = QHeaderView.ResizeToContents
+        self.horizontal_header = self.table_view.horizontalHeader()
+        self.vertical_header = self.table_view.verticalHeader()
+        self.horizontal_header.setSectionResizeMode(resize)
+        self.vertical_header.setSectionResizeMode(resize)
+        self.horizontal_header.setStretchLastSection(True)
 
         # Creating QChart
-        #self.chart = QtCharts.QChart()
-        #self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
-        #self.add_series("Magnitude (Column 1)", [0, 1])
+        self.chart = QtCharts.QChart()
+        self.chart.setAnimationOptions(QtCharts.QChart.AllAnimations)
+        self.add_series("Magnitude (Column 1)", [0, 1])
 
         # Creating QChartView
-        #self.chart_view = QtCharts.QChartView(self.chart)
-        #self.chart_view.setRenderHint(QPainter.Antialiasing)
-
-        data = data.head(1000)
-
-        self.wind_direction = data['wind_direction']
-        self.wind_speed = data['wind_speed']
-
-        self.ax = WindroseAxes.from_ax()
-        self.ax.bar(self.wind_direction, self.wind_speed, normed=True, opening=0.8, edgecolor='white')
-        self.ax.set_legend()
-
-        # Creating QChartView
-        self.chart_view = QtCharts.QChartView(self.ax)
+        self.chart_view = QtCharts.QChartView(self.chart)
         self.chart_view.setRenderHint(QPainter.Antialiasing)
 
         # QWidget Layout
@@ -56,9 +43,9 @@ class Widget(QWidget):
         size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
         # Left layout
-        #size.setHorizontalStretch(1)
-        #self.table_view.setSizePolicy(size)
-        #self.main_layout.addWidget(self.table_view)
+        size.setHorizontalStretch(1)
+        self.table_view.setSizePolicy(size)
+        self.main_layout.addWidget(self.table_view)
 
         # Right Layout
         size.setHorizontalStretch(4)
