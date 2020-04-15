@@ -6,7 +6,6 @@ from PySide2.QtCharts import QtCharts
 from spiral import Spiral
 from windrose_plot import WindrosePlot
 from humidity_plot import HumidityPlot
-from polar_plot import PolarPlot
 
 
 class DetailWidget(QWidget):

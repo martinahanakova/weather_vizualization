@@ -1,5 +1,5 @@
 from PySide2.QtCore import Qt, QRect, QPointF
-from PySide2.QtGui import QPainter, QColor, QPen, QLinearGradient, QBrush
+from PySide2.QtGui import QPainter, QColor, QPen, QLinearGradient, QBrush, QPolygonF
 from PySide2.QtWidgets import (QWidget, QGridLayout)
 from PySide2.QtCharts import QtCharts
 
@@ -15,121 +15,147 @@ class HumidityPlot(QWidget):
         self.data = data
         self.city = city
 
+        self.arc_line_color = Qt.white
+        self.arc_fill_color = QColor(0, 191,255)
+        self.text_color = Qt.white
+
+        self.arc_line_width = 1.0
+        self.pi = 3.141592654
+
+        self.labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
     def paintEvent(self, event):
         width  = self.width()
         height = self.height()
 
         painter = QPainter(self)
 
-        pi = 3.141592654
+        self.radius = 0.85
 
-        radius = (height/2) - 20
+        x0 = 0.0 + (self.width() - self.height())/self.height()
+        y0 = 0.0
 
-        x = width / 2
-        y = height / 2
+        x, y = self.convert_center(0.0, 0.0)
 
         painter.setPen(QPen(Qt.white, 2, Qt.SolidLine))
 
-        painter.drawEllipse(QPointF(x, y), radius, radius)
+        painter.drawEllipse(QPointF(x, y), self.radius*self.height()/2, self.radius*self.height()/2)
 
         months = 12
 
+        proccessed_data = self.process_data(self.data, self.city, self.radius)
+
+        for month_id in range(months):
+            self.paint_arc_for_month(painter, proccessed_data, x0, y0, month_id)
+
         for i in range(months):
-            angle = 2.0*pi * i/months
+                    angle = 2.0*self.pi * i/months
 
-            # Point 2 Coordinates
-            x_p2 = radius*numpy.sin(angle)
-            y_p2 = radius*numpy.cos(angle)
+                    # Point 2 Coordinates
+                    x_p2 = self.radius*(height/2)*numpy.cos(angle)
+                    y_p2 = self.radius*(height/2)*numpy.sin(angle)
 
-            x_2 = int(x + x_p2)
-            y_2 = int(y + y_p2)
+                    x_2 = int(x + x_p2)
+                    y_2 = int(y + y_p2)
 
-            painter.drawLine(QPointF(x, y), QPointF(x_2, y_2))
+                    painter.drawLine(QPointF(x, y), QPointF(x_2, y_2))
 
-        proccessed_data = self.process_data(self.data, self.city, radius)
-
-        counter = 0
-
-        for i in range(1):
-            angle_1 = 2.0*pi * i/months
-            angle_2 = 2.0*pi * (i+1)/months
-
-            while True:
-                actual_month = proccessed_data["month"].loc[proccessed_data.index.values[counter]]
-                if counter+1 >= len(proccessed_data):
-                    next_month = 13
-                else:
-                    next_month = proccessed_data["month"].loc[proccessed_data.index.values[counter+1]]
-
-                radius_part = proccessed_data["sum_accross_years"].loc[proccessed_data.index.values[counter]]
-
-                print(x, y)
-                print(radius_part)
-
-                x = 0
-                y = 0
-
-                x_0 = width*(x + 1.0)/2.0
-                y_0 = height*(y + 1.0)/2.0
-
-                x_0 = 0
-                y_0 = 0
-
-                radius_part = 0.5
-
-                # Point 1 Coordinates
-                x_p1 = radius_part*numpy.sin(angle_1)
-                y_p1 = radius_part*numpy.cos(angle_1)
-
-                x_1 = x_0 + x_p1
-                y_1 = y_0 + y_p1
-
-                print(x_p1, y_p1)
-
-                # Point 2 Coordinates
-                x_p2 = radius_part*numpy.sin(angle_2)
-                y_p2 = radius_part*numpy.cos(angle_2)
-
-                x_2 = x_0 + x_p2
-                y_2 = y_0 + y_p2
-
-                print(x_p2, y_p2)
-
-                x_t = width*(x_0 + 1.0)/2.0
-                y_t = height*(y_0 + 1.0)/2.0
-
-                x_t1 = width*(x_1 + 1.0)/2.0
-                y_t1 = height*(y_1 + 1.0)/2.0
-
-                x_t2 = width*(x_2 + 1.0)/2.0
-                y_t2 = height*(y_2 + 1.0)/2.0
-
-                # Draw Wedge
-                S = QPointF(x_t, y_t)
-                A = QPointF(x_t1, y_t1)
-                B = QPointF(x_t2, y_t2)
-
-                print(x_t, y_t)
-                print(x_t1, y_t1)
-                print(x_t2, y_t2)
-
-                halfSide = A.x()-S.x()
-                rectangle = QRect(S.x() - halfSide,
-                                 S.y() - halfSide,
-                                 S.x() + halfSide,
-                                 S.y() + halfSide)
-
-                startAngle = 0
-                spanAngle = (math.atan2(B.y()-S.y(),B.x()-S.x()) * 180 / pi) * 16;
-
-                painter.drawArc(rectangle, startAngle, spanAngle);
-
-                counter = counter + 1
-
-                if actual_month != next_month:
-                    break
+        self.paint_labels(painter, x0, y0, self.radius, self.labels)
 
         painter.end()
+
+    def paint_arc_for_month(self, painter, data, x0, y0, month_id, months = 12):
+        painter.setPen(QPen(self.arc_line_color, self.arc_line_width, Qt.SolidLine))
+        painter.setBrush(self.arc_fill_color)
+
+        month_data = data[data['month'] == month_id+1]
+
+        for i in range(len(month_data)):
+            arc_length = 2.0*self.pi/months
+            phi_center = 2.0*self.pi*month_id/months
+
+            arc_radius = month_data["sum_accross_years"].loc[month_data.index.values[i]]
+
+            polygon_points = self.compute_circle_arc_polygon(x0, y0, arc_radius, phi_center, arc_length)
+            painter.drawConvexPolygon(polygon_points)
+
+    def compute_circle_arc_polygon(self, x0, y0, radius, phi_begin, arc_length, steps = 32):
+        polygon = QPolygonF()
+
+        x0_t, y0_t = self.convert_position(x0, y0)
+        polygon.append(QPointF(x0_t, y0_t))
+
+        begin = phi_begin
+        end = arc_length + phi_begin
+        step = (begin - end)/steps
+
+        angle = float(begin)
+
+        for i in range(steps):
+            x = x0 + radius*numpy.cos(angle)
+            y = y0 + radius*numpy.sin(angle)
+
+            x_t, y_t = self.convert_position(x, y)
+
+            polygon.append(QPointF(x_t, y_t))
+
+            angle+= step
+
+        return polygon
+
+    def paint_spacing_lines(self, painter, x0, y0, radius, steps):
+        painter.setPen(QPen(self.text_color, 2, Qt.SolidLine))
+        painter.setBrush(self.text_color)
+
+        for n in range(steps):
+            phi = 2.0*self.pi*n/steps
+
+            x1 = x0 + radius*numpy.cos(phi)
+            y1 = y0 + radius*numpy.sin(phi)
+
+            x0_t, y0_t = self.convert_position(x0, y0)
+            x1_t, y1_t = self.convert_position(x1, y1)
+
+            painter.drawLine(x0_t, y0_t, x1_t, y1_t)
+
+    def paint_labels(self, painter, x0, y0, radius, labels):
+        steps = len(labels)
+
+        radius = radius + 0.11
+
+        for n in range(steps):
+            phi = 2.0*self.pi*n/steps + 0.5*2.0*self.pi/steps
+
+            x1 = x0 + radius*numpy.cos(phi) - 0.09
+            y1 = y0 + radius*numpy.sin(phi) + 0.05
+
+            xt, yt = self.convert_position(x1, y1)
+
+            text = labels[n]
+            painter.setPen(QPen(self.text_color, 2, Qt.SolidLine))
+            painter.drawText(xt, yt, labels[n])
+
+    def convert_position(self, x, y):
+        width  = self.width()
+        height = self.height()
+
+        d = numpy.min([width, height])
+
+        x_t = int(d*(x + 1.0)/2.0)
+        y_t = int(d*(y + 1.0)/2.0)
+
+        return x_t, y_t
+
+    def convert_center(self, x, y):
+        width  = self.width()
+        height = self.height()
+
+        d = numpy.min([width, height])
+
+        x_t = int(width*(x + 1.0)/2.0)
+        y_t = int(height*(y + 1.0)/2.0)
+
+        return x_t, y_t
 
     def process_data(self, data, city, radius):
         data['datetime'] = pd.to_datetime(data['datetime'])
