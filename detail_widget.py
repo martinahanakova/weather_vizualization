@@ -9,23 +9,24 @@ from humidity_plot import HumidityPlot
 
 
 class DetailWidget(QWidget):
-    def __init__(self, data):
+    def __init__(self, data, city):
         QWidget.__init__(self)
 
         self.data = data
+        self.city = city
 
         # Creating Pressure Spiral
-        self.pressure_spiral = Spiral(data, 'Eilat', 'pressure')
+        self.pressure_spiral = Spiral(data, city, 'pressure')
 
         # Creating Windrose Plot
-        self.windrose_plot = WindrosePlot(data, 'Eilat')
+        self.windrose_plot = WindrosePlot(data, city)
 
         # Creating Humidity Plot
         #self.humidity_plot = PolarPlot(data)
-        self.humidity_plot = HumidityPlot(data, 'Eilat')
+        self.humidity_plot = HumidityPlot(data, city)
 
         # Creating Temperature Spiral
-        self.temperature_spiral = Spiral(data, 'Eilat', 'temperature')
+        self.temperature_spiral = Spiral(data, city, 'temperature')
 
         # QWidget Layout
         self.layout = QGridLayout()
