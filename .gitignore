@@ -3,3 +3,4 @@ __pycache__
 env
 all_hour.csv
 final_data.csv
+node_modules
