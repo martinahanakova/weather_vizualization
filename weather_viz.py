@@ -31,8 +31,8 @@ if __name__ == "__main__":
     #window = DetailWindow(widget)
 
     model = MarkerModel()
-    widget = MapWidget(model)
-    window = MainWindow()
+    widget = MapWidget(data, model)
+    window = MainWindow(widget)
 
     window.show()
 

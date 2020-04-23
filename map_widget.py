@@ -8,21 +8,27 @@ import os
 
 
 class MapWidget(QQuickWidget):
-    def __init__(self, model):
+    def __init__(self, data, model):
         super(MapWidget, self).__init__(resizeMode=QQuickWidget.SizeRootObjectToView)
 
+        self.data = data
         self.model = model
 
         self.rootContext().setContextProperty("markermodel", model)
         qml_path = os.path.join(os.path.dirname(__file__), "map.qml")
         self.setSource(QUrl.fromLocalFile(qml_path))
 
-        positions = [(44.97104,-93.46055), (44.96104,-93.16055)]
+        positions = self.get_positions(self.data)
 
-        urls = ["http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_gray.png",
-                "http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png"]
+        marker_url = "http://maps.gstatic.com/mapfiles/ridefinder-images/mm_20_red.png"
 
-        for c, u in zip(positions, urls):
-            coord = QGeoCoordinate(*c)
-            source = QUrl(u)
-            model.appendMarker({"position": coord , "source": source})
+        for coordinates in positions:
+            geo_coordinates = QGeoCoordinate(*coordinates)
+            marker = QUrl(marker_url)
+            model.appendMarker({"position": geo_coordinates , "source": marker})
+
+    def get_positions(self, data):
+        data = data.drop_duplicates('city')
+        data['positions'] = [[x, y] for x, y in zip(data['latitude'], data['longitude'])]
+
+        return data['positions']

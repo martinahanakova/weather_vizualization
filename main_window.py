@@ -4,8 +4,8 @@ from PySide2.QtWidgets import QMainWindow, QAction
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
-        QMainWindow.__init__(self, map)
+    def __init__(self, map):
+        QMainWindow.__init__(self)
         self.setWindowTitle("Overview")
 
         self.setCentralWidget(map)
