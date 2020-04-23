@@ -1,7 +1,6 @@
 from PySide2.QtCore import QDateTime, Qt
 from PySide2.QtGui import QPainter
 from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout)
-from PySide2.QtCharts import QtCharts
 
 from spiral import Spiral
 from windrose_plot import WindrosePlot

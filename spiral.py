@@ -1,7 +1,6 @@
 from PySide2.QtCore import Qt, QRect
 from PySide2.QtGui import QPainter, QColor, QPen, QLinearGradient, QBrush
 from PySide2.QtWidgets import (QWidget, QGridLayout)
-from PySide2.QtCharts import QtCharts
 
 import numpy
 import pandas as pd

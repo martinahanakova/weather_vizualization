@@ -4,10 +4,12 @@ from PySide2.QtWidgets import QMainWindow, QAction
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, widget):
-        QMainWindow.__init__(self)
-        self.setWindowTitle("Eartquakes information")
-        self.setCentralWidget(widget)
+    def __init__(self):
+        QMainWindow.__init__(self, map)
+        self.setWindowTitle("Overview")
+
+        self.setCentralWidget(map)
+
         # Menu
         self.menu = self.menuBar()
         self.file_menu = self.menu.addMenu("File")
