@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.11.0, 2020-04-23T10:36:52. -->
+<!-- Written by QtCreator 4.11.0, 2020-04-23T15:25:03. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -293,11 +293,11 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">map_widget</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration./Users/Martina/Documents/Projects/Weather_Vizualization/map_widget.py</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/Users/Martina/Documents/Projects/Weather_Vizualization/map_widget.py</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">model</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration./Users/Martina/Documents/Projects/Weather_Vizualization/model.py</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/Users/Martina/Documents/Projects/Weather_Vizualization/model.py</value>
     <value type="QString" key="PythonEditor.RunConfiguation.Interpreter"></value>
-    <value type="QString" key="PythonEditor.RunConfiguation.Script">/Users/Martina/Documents/Projects/Weather_Vizualization/map_widget.py</value>
+    <value type="QString" key="PythonEditor.RunConfiguation.Script">/Users/Martina/Documents/Projects/Weather_Vizualization/model.py</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
@@ -901,11 +901,11 @@
     </valuelist>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">main</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration./Users/Martina/Documents/Projects/Weather_Vizualization/main.py</value>
-    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/Users/Martina/Documents/Projects/Weather_Vizualization/main.py</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">map_widget</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration./Users/Martina/Documents/Projects/Weather_Vizualization/map_widget.py</value>
+    <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">/Users/Martina/Documents/Projects/Weather_Vizualization/map_widget.py</value>
     <value type="QString" key="PythonEditor.RunConfiguation.Interpreter"></value>
-    <value type="QString" key="PythonEditor.RunConfiguation.Script">/Users/Martina/Documents/Projects/Weather_Vizualization/main.py</value>
+    <value type="QString" key="PythonEditor.RunConfiguation.Script">/Users/Martina/Documents/Projects/Weather_Vizualization/map_widget.py</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>

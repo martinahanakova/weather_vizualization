@@ -10,13 +10,28 @@ Rectangle {
         id: osmPlugin
         name: "osm"
     }
-    property variant locationTC: QtPositioning.coordinate(44.951, -93.192)
     Map {
         id: map
         anchors.fill: parent
         plugin: osmPlugin
-        center: locationTC
-        zoomLevel: 5
+        zoomLevel: 1
+        MapRectangle {
+            color: 'green'
+            rotation: 90
+            z: 90
+            opacity: 0.5
+                border.width: 2
+                topLeft {
+                    latitude: 44
+                    longitude: -93
+                    altitude: 2000
+                }
+                bottomRight {
+                    latitude: 42
+                    longitude: -91
+                    altitude: 0
+                }
+         }
         MapItemView{
             model: markermodel
             delegate: MapQuickItem {
@@ -29,3 +44,4 @@ Rectangle {
         }
     }
 }
+
