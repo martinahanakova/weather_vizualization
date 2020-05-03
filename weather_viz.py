@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # Qt Application
     app = QApplication(sys.argv)
 
-    city = 'Las Vegas'
+    city = 'Vancouver'
     widget = DetailWidget(data, city)
     window = DetailWindow(widget)
 
