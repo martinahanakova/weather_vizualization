@@ -18,4 +18,4 @@ class DetailWindow(QMainWindow):
 
         # Window dimensions
         geometry = qApp.desktop().availableGeometry(self)
-        self.setFixedSize(geometry.width(), geometry.height())
+        self.setFixedSize(0.8*geometry.width(), geometry.height())

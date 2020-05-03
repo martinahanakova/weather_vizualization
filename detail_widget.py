@@ -44,30 +44,11 @@ class DetailWidget(QWidget):
         self.interaction_panel = QWidget()
         self.interaction_panel = loader.load(file)
 
-        '''
-        self.interaction_layout = QGridLayout()
-        self.interaction_layout.addWidget(pressure, 0, 0)
-
-        pressure = self.create_interation('Wind')
-        self.interaction_layout.addLayout(pressure, 0, 1)
-
-        pressure = self.create_interation('Humidity')
-        self.interaction_layout.addLayout(pressure, 1, 0)
-
-        pressure = self.create_interation('Temperature')
-        self.interaction_layout.addLayout(pressure, 1, 1)
-        '''
-
         # QWidget Layout
-        self.layout = QHBoxLayout()
-        size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.layout = QGridLayout()
 
-        #size.setHorizontalStretch(4)
-        self.layout.addLayout(self.grid_layout)
-
-        #size.setHorizontalStretch(1)
-        #self.interaction_panel.setSizePolicy(size)
-        self.layout.addWidget(self.interaction_panel)
+        self.layout.addLayout(self.grid_layout, 0, 0, 1, 3)
+        self.layout.addWidget(self.interaction_panel, 0, 3, 1, 1)
 
         # Set the layout to the QWidget
         self.setLayout(self.layout)
