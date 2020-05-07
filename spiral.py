@@ -15,11 +15,34 @@ class Spiral(QWidget):
         self.city = city
         self.attribute = attribute
 
+        self.all = 1
+        self.month = 0
+        self.day = 0
+
+    def set_paint(self, all_flag, month_flag, day_flag, year=None, month=None, day=None):
+        self.all = all_flag
+        self.month = month_flag
+        self.day = day_flag
+
+        self.year = year
+        self.month = month
+        self.day = day
+
     def paintEvent(self, event):
+        painter = QPainter(self)
+
+        if self.all:
+            self.paint_all(painter)
+        elif self.month:
+            self.paint_month(painter)
+        elif self.day:
+            self.paint_day(painter)
+
+        painter.end()
+
+    def paint_all(self, painter):
         width  = self.width()
         height = self.height()
-
-        painter = QPainter(self)
 
         pi = 3.141592654
         data_points_count, colors, attribute_values, values, months = self.process_data(self.data, self.city, self.attribute)
@@ -77,6 +100,57 @@ class Spiral(QWidget):
             painter.setPen(QPen(Qt.white, 2, Qt.SolidLine))
             painter.drawText(x_t, y_t, text)
 
+        self.paint_legend(painter, attribute_values, values)
+
+        return
+
+    def paint_month(self, painter):
+        width  = self.width()
+        height = self.height()
+
+        pi = 3.141592654
+
+        data_points_count, colors, attribute_values, values, months = self.process_data(self.data, self.city, self.attribute)
+
+        spiral_points = 31
+        radius = 0.7
+
+        for i in range(spiral_points):
+            angle = -2.0*pi * i / spiral_points
+
+            # transformacia suradnic z <-1, 1> sveta do <0, width> a <0, height>
+            x = radius*numpy.sin(angle)
+            y = radius*numpy.cos(angle)
+
+            x_t = int(3*width/4*(x + 1.0)/2.0)
+            y_t = int(height*(y + 1.0)/2.0)
+
+            # Set Point Color
+            #rgb_color = colors.loc[colors.index[i]]
+            color = QColor(Qt.white)
+            #color.setRgb(int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]))
+            point_color = color
+
+            # Set Point Radius
+            circle_radius = 7
+
+            # Draw Point
+            painter.setBrush(point_color)
+            painter.setPen(QPen(Qt.black, 2, Qt.SolidLine))
+            painter.drawEllipse(x_t, y_t, circle_radius, circle_radius)
+
+        self.paint_legend(painter, attribute_values, values)
+
+        return
+
+    def paint_day(self, painter):
+
+        return
+
+    def paint_legend(self, painter, attribute_values, values):
+        width  = self.width()
+        height = self.height()
+
         # Create Colorbar Legend
         brush = QBrush()
         brush.setStyle(Qt.SolidPattern)
@@ -104,7 +178,7 @@ class Spiral(QWidget):
             painter.fillRect(rect, brush)
             painter.drawText(text_x, text_y, text)
 
-        painter.end()
+        return
 
     def process_data(self, data, city, attribute):
         data['datetime'] = pd.to_datetime(data['datetime'])
