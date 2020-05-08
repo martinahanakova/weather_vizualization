@@ -1,8 +1,6 @@
-from PySide2.QtCore import QDateTime, Qt, QFile
+from PySide2.QtCore import Qt, QFile
 from PySide2 import QtUiTools
-from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy, QGridLayout, QComboBox)
-from PySide2.QtCharts import QtCharts
+from PySide2.QtWidgets import (QWidget, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QComboBox, QCheckBox)
 
 from functools import partial
 
@@ -44,26 +42,51 @@ class DetailWidget(QWidget):
         self.interaction_panel = QWidget()
         self.interaction_panel = loader.load(file)
 
-        # Buttons For Pressure
-        pressure_month_checkbox = self.interaction_panel.pressure_month_checkbox
-        pressure_year_comboBox = self.interaction_panel.pressure_year_comboBox
-        pressure_month_comboBox = self.interaction_panel.pressure_month_comboBox
-        pressure_day_checkbox = self.interaction_panel.pressure_day_checkbox
-        pressure_day_comboBox = self.interaction_panel.pressure_day_comboBox
+        # UI Elements For Pressure
+        pressure_ui_elements = (
+            self.interaction_panel.pressure_month_checkbox,
+            self.interaction_panel.pressure_day_checkbox,
+            self.interaction_panel.pressure_year_comboBox,
+            self.interaction_panel.pressure_month_comboBox,
+            self.interaction_panel.pressure_day_comboBox
+        )
 
-        # Connections For Month Pressure
-        pressure_month_checkbox.stateChanged.connect(partial(self.stateChanged, self.pressure_spiral, pressure_month_checkbox, \
-        pressure_day_checkbox, pressure_year_comboBox, pressure_month_comboBox, pressure_day_comboBox))
-        pressure_month_comboBox.currentTextChanged.connect(partial(self.stateChanged, self.pressure_spiral, pressure_month_checkbox, \
-        pressure_day_checkbox, pressure_year_comboBox, pressure_month_comboBox, pressure_day_comboBox))
-        pressure_year_comboBox.currentTextChanged.connect(partial(self.stateChanged, self.pressure_spiral, pressure_month_checkbox, \
-        pressure_day_checkbox, pressure_year_comboBox, pressure_month_comboBox, pressure_day_comboBox))
+        # Connect UI Elements For Pressure
+        for element in pressure_ui_elements:
 
-        # Connections For Day Pressure
-        pressure_day_checkbox.stateChanged.connect(partial(self.stateChanged, self.pressure_spiral, pressure_month_checkbox, \
-        pressure_day_checkbox, pressure_year_comboBox, pressure_month_comboBox, pressure_day_comboBox))
-        pressure_day_comboBox.currentTextChanged.connect(partial(self.stateChanged, self.pressure_spiral, pressure_month_checkbox, \
-        pressure_day_checkbox, pressure_year_comboBox, pressure_month_comboBox, pressure_day_comboBox))
+            if isinstance(element, QComboBox):
+                f = element.currentTextChanged
+            elif isinstance(element, QCheckBox):
+                f = element.stateChanged
+
+            f.connect(partial(
+                self.stateChanged,
+                self.pressure_spiral,
+                *pressure_ui_elements
+            ))
+
+        # UI Elements For Temperature
+        temperature_ui_elements = (
+            self.interaction_panel.temperature_month_checkbox,
+            self.interaction_panel.temperature_day_checkbox,
+            self.interaction_panel.temperature_year_comboBox,
+            self.interaction_panel.temperature_month_comboBox,
+            self.interaction_panel.temperature_day_comboBox
+        )
+
+        # Connect UI Elements For Temperature
+        for element in temperature_ui_elements:
+
+            if isinstance(element, QComboBox):
+                f = element.currentTextChanged
+            elif isinstance(element, QCheckBox):
+                f = element.stateChanged
+
+            f.connect(partial(
+                self.stateChanged,
+                self.temperature_spiral,
+                *temperature_ui_elements
+            ))
 
         # QWidget Layout
         self.layout = QGridLayout()
@@ -95,7 +118,7 @@ class DetailWidget(QWidget):
     def stateChanged(self, widget, monthCheckBox, dayCheckBox, yearComboBox, monthComboBox, dayComboBox, arg):
         if monthCheckBox.isChecked():
             year = yearComboBox.currentText()
-            month = monthComboBox.currentText()
+            month = monthComboBox.currentIndex() + 1
 
             if dayCheckBox.isChecked():
                 day = dayComboBox.currentText()

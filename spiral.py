@@ -1,7 +1,6 @@
 from PySide2.QtCore import Qt, QRect
-from PySide2.QtGui import QPainter, QColor, QPen, QLinearGradient, QBrush
-from PySide2.QtWidgets import (QWidget, QGridLayout)
-from PySide2.QtCharts import QtCharts
+from PySide2.QtGui import QPainter, QColor, QPen, QBrush
+from PySide2.QtWidgets import (QWidget)
 
 import numpy
 import pandas as pd
@@ -15,14 +14,18 @@ class Spiral(QWidget):
         self.city = city
         self.attribute = attribute
 
-        self.all = 1
-        self.month = 0
-        self.day = 0
+        self.all_flag = 1
+        self.month_flag = 0
+        self.day_flag = 0
+
+        self.year = None
+        self.month = None
+        self.day = None
 
     def set_paint(self, all_flag, month_flag, day_flag, year=None, month=None, day=None):
-        self.all = all_flag
-        self.month = month_flag
-        self.day = day_flag
+        self.all_flag = all_flag
+        self.month_flag = month_flag
+        self.day_flag = day_flag
 
         self.year = year
         self.month = month
@@ -31,21 +34,22 @@ class Spiral(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
 
-        if self.all:
+        if self.all_flag:
             self.paint_all(painter)
-        elif self.month:
-            self.paint_month(painter)
-        elif self.day:
-            self.paint_day(painter)
+        elif self.month_flag:
+            self.paint_detail(painter, 1, 0)
+        elif self.day_flag:
+            self.paint_detail(painter, 1, 1)
 
         painter.end()
 
     def paint_all(self, painter):
-        width  = self.width()
+        width = self.width()
         height = self.height()
 
         pi = 3.141592654
-        data_points_count, colors, attribute_values, values, months = self.process_data(self.data, self.city, self.attribute)
+
+        data_points_count, colors, attribute_values, values, months = self.process_data(self.data, self.city, self.attribute, 0, 0)
 
         rotations = int(numpy.floor(data_points_count/12))
         spiral_points = (data_points_count//12)*12
@@ -87,7 +91,6 @@ class Spiral(QWidget):
         for i in range(12):
             text = months[i]
             angle = -2.0*pi * i / 12
-            k = i / 12
 
             radius = 1.25*radius_max
 
@@ -104,15 +107,15 @@ class Spiral(QWidget):
 
         return
 
-    def paint_month(self, painter):
-        width  = self.width()
+    def paint_detail(self, painter, month_flag, day_flag):
+        width = self.width()
         height = self.height()
 
         pi = 3.141592654
 
-        data_points_count, colors, attribute_values, values, months = self.process_data(self.data, self.city, self.attribute)
+        data_points_count, colors, attribute_values, values, steps = self.process_data(self.data, self.city, self.attribute, month_flag, day_flag)
 
-        spiral_points = 31
+        spiral_points = data_points_count
         radius = 0.7
 
         for i in range(spiral_points):
@@ -126,24 +129,35 @@ class Spiral(QWidget):
             y_t = int(height*(y + 1.0)/2.0)
 
             # Set Point Color
-            #rgb_color = colors.loc[colors.index[i]]
-            color = QColor(Qt.white)
-            #color.setRgb(int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]))
+            rgb_color = colors.loc[colors.index[i]]
+            color = QColor(Qt.black)
+            color.setRgb(int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]))
             point_color = color
 
             # Set Point Radius
-            circle_radius = 7
+            circle_radius = 14
 
             # Draw Point
             painter.setBrush(point_color)
             painter.setPen(QPen(Qt.black, 2, Qt.SolidLine))
             painter.drawEllipse(x_t, y_t, circle_radius, circle_radius)
 
+        radius = 1.25 * radius
+
+        for i in range(spiral_points):
+            text = str(steps[i])
+            angle = -2.0*pi * i / spiral_points
+
+            x = radius*numpy.sin(angle)
+            y = radius*numpy.cos(angle)
+
+            x_t = int(3*width/4*(x + 1.0)/2.0)
+            y_t = int(height*(y + 1.1)/2.0)
+
+            painter.setPen(QPen(Qt.white, 2, Qt.SolidLine))
+            painter.drawText(x_t, y_t, text)
+
         self.paint_legend(painter, attribute_values, values)
-
-        return
-
-    def paint_day(self, painter):
 
         return
 
@@ -180,9 +194,14 @@ class Spiral(QWidget):
 
         return
 
-    def process_data(self, data, city, attribute):
+    def process_data(self, data, city, attribute, month_flag, day_flag):
         data['datetime'] = pd.to_datetime(data['datetime'])
         data['month_year'] = data['datetime'].dt.to_period('M')
+
+        data['year'] = data['datetime'].dt.year
+        data['month'] = data['datetime'].dt.month
+        data['day'] = data['datetime'].dt.day
+        data['hour'] = data['datetime'].dt.hour
 
         tmp = data.groupby(['city','month_year']).agg({attribute : 'mean'})
 
@@ -193,9 +212,23 @@ class Spiral(QWidget):
         step = round(1 / 6 * diff)
 
         filtered_city = data[data['city'] == city]
-        att_data = filtered_city[['datetime', attribute, 'month_year']]
 
-        data_points_count = len(att_data['month_year'].unique())
+        if month_flag:
+            filtered_data = filtered_city[filtered_city['year'] == int(self.year)]
+            filtered_data = filtered_data[filtered_data['month'] == int(self.month)]
+
+            if day_flag:
+                filtered_data = filtered_data[filtered_data['day'] == int(self.day)]
+                att_data = filtered_data[['datetime', attribute, 'hour']]
+                data_points_count = len(att_data['hour'].unique())
+            else:
+                att_data = filtered_data[['datetime', attribute, 'day']]
+                data_points_count = len(att_data['day'].unique())
+                att_data = att_data.groupby('day').agg({attribute: 'mean'})
+        else:
+            att_data = filtered_city[['datetime', attribute, 'month_year']]
+            data_points_count = len(att_data['month_year'].unique())
+            att_data = att_data.groupby('month_year').agg({attribute: 'mean'})
 
         if attribute == 'pressure':
             attribute_values = {0: [255,255,255], 1: [204,229,255], 2: [102,178,255], 3: [0,128,255], \
@@ -204,23 +237,27 @@ class Spiral(QWidget):
             attribute_values = {0: [0,102,204], 1: [102,178,255], 2: [204,229,255], 3: [255,204,204], \
             4: [255,102,102], 5: [204,0,0], 6: [102,0,0]}
 
-        att_data = att_data.groupby('month_year').agg({attribute : 'mean'})
-
         att_data = att_data.reset_index()
 
         values = numpy.array([min_value, min_value + 1*step, min_value + 2*step, min_value + 3*step, \
-        min_value + 4*step, min_value + 5*step, max_value])
+            min_value + 4*step, min_value + 5*step, max_value])
 
         att_data['distances'] = att_data[attribute].apply(lambda x: abs(x - values))
         att_data['index'] = att_data['distances'].apply(lambda x: numpy.argmin(x))
         att_data['color'] = att_data['index'].apply(lambda x: attribute_values.get(x))
 
-        att_data = att_data.reset_index(drop='True')
-        att_data['month'] = att_data['month_year'].dt.month
+        if not month_flag:
+            att_data = att_data.reset_index(drop='True')
+            att_data['month'] = att_data['month_year'].dt.month
 
-        months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", \
-        7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
+            months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", \
+                7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
 
-        att_data['month'] = att_data['month'].apply(lambda x: months.get(x))
+            att_data['month'] = att_data['month'].apply(lambda x: months.get(x))
 
-        return data_points_count, att_data['color'], attribute_values, values, att_data['month']
+        if day_flag:
+            return data_points_count, att_data['color'], attribute_values, values, att_data['hour']
+        elif month_flag:
+            return data_points_count, att_data['color'], attribute_values, values, att_data['day']
+        else:
+            return data_points_count, att_data['color'], attribute_values, values, att_data['month']
