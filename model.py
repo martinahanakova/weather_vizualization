@@ -2,7 +2,7 @@ from PySide2.QtCore import (QAbstractListModel, Qt, QModelIndex)
 
 
 class MarkerModel(QAbstractListModel):
-    PositionRole, SourceRole = range(Qt.UserRole, Qt.UserRole + 2)
+    PositionRole, ColorRole, NameRole, ValueRole = range(Qt.UserRole, Qt.UserRole + 4)
 
     def __init__(self, parent=None):
         super(MarkerModel, self).__init__(parent)
@@ -15,11 +15,23 @@ class MarkerModel(QAbstractListModel):
         if 0 <= index.row() < self.rowCount():
             if role == MarkerModel.PositionRole:
                 return self._markers[index.row()]["position"]
-            elif role == MarkerModel.SourceRole:
-                return self._markers[index.row()]["source"]
+            elif role == MarkerModel.ColorRole:
+                return self._markers[index.row()]["color"]
+            elif role == MarkerModel.NameRole:
+                return self._markers[index.row()]["name"]
+            elif role == MarkerModel.ValueRole:
+                return self._markers[index.row()]["value"]
+
+    def setData(self, index, value, role=Qt.DisplayRole):
+        self._markers[index]["value"] = value
+        newIndex = self.createIndex(index, index)
+        print(newIndex)
+        self.dataChanged.emit(newIndex, newIndex, []) # TODO: emit not working due to params
+        return True
 
     def roleNames(self):
-        return {MarkerModel.PositionRole: b"position_marker", MarkerModel.SourceRole: b"source_marker"}
+        return {MarkerModel.PositionRole: b"position_marker", MarkerModel.ColorRole: b"color_marker", MarkerModel.NameRole: b"name_marker", MarkerModel.ValueRole: b"value_marker"}
+
 
     def appendMarker(self, marker):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
