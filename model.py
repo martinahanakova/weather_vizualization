@@ -23,10 +23,12 @@ class MarkerModel(QAbstractListModel):
                 return self._markers[index.row()]["value"]
 
     def setData(self, index, value, role=Qt.DisplayRole):
+    #    print(self._markers[index]["value"])
         self._markers[index]["value"] = value
+       # print(self._markers[index]["value"])
         newIndex = self.createIndex(index, index)
-        print(newIndex)
-        self.dataChanged.emit(newIndex, newIndex, []) # TODO: emit not working due to params
+        #print(newIndex)
+        self.dataChanged.emit(newIndex, newIndex, [])
         return True
 
     def roleNames(self):
