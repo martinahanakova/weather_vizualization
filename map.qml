@@ -64,7 +64,6 @@ Rectangle {
                                     ToolTip.visible = false
                                 }
                                 onDoubleClicked: {
-                                  console.log("Clicked")
                                   marker_model.open_detail(model.name_marker)
                                 }
                         }

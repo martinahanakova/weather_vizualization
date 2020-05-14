@@ -14,18 +14,16 @@ class MarkerModel(QAbstractListModel):
 
     @Slot(str)
     def open_detail(self, city):
-        print(city)
-
         widget = DetailWidget(self.model_data, city)
         self.dialog = DetailWindow(widget, city)
 
         self.dialog.show()
 
-    def rowCount(self, parent=QModelIndex()):
+    def get_row_count(self):
         return len(self._markers)
 
     def data(self, index, role=Qt.DisplayRole):
-        if 0 <= index.row() < self.rowCount():
+        if 0 <= index.row() < self.get_row_count():
             if role == MarkerModel.PositionRole:
                 return self._markers[index.row()]["position"]
             elif role == MarkerModel.ColorRole:
@@ -49,6 +47,6 @@ class MarkerModel(QAbstractListModel):
             MarkerModel.ValueRole: b"value_marker"}
 
     def append_marker(self, marker):
-        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
+        self.beginInsertRows(QModelIndex(), self.get_row_count(), self.get_row_count())
         self._markers.append(marker)
         self.endInsertRows()
