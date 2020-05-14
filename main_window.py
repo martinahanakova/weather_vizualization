@@ -10,20 +10,10 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(map)
 
-        # Menu
-        self.menu = self.menuBar()
-        self.file_menu = self.menu.addMenu("File")
-
-        ## Exit QAction
+        # Exit QAction
         exit_action = QAction("Exit", self)
         exit_action.setShortcut(QKeySequence.Quit)
         exit_action.triggered.connect(self.close)
-
-        self.file_menu.addAction(exit_action)
-
-        # Status Bar
-        self.status = self.statusBar()
-        self.status.showMessage("Data loaded and plotted")
 
         # Window dimensions
         geometry = qApp.desktop().availableGeometry(self)

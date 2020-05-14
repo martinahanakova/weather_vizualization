@@ -3,7 +3,6 @@ from PySide2.QtGui import QPixmap, QImage, QPainter
 from PySide2.QtCore import QByteArray, Qt
 
 import plotly.express as px
-import pandas as pd
 import numpy as np
 
 

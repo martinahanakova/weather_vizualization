@@ -1,17 +1,17 @@
 from PySide2.QtCore import *
 from PySide2.QtGui import QKeySequence
-from PySide2.QtWidgets import QMainWindow, QAction
+from PySide2.QtWidgets import QDialog, QAction
 
 
-class DetailWindow(QMainWindow):
+class DetailWindow(QDialog):
     def __init__(self, widget):
-        QMainWindow.__init__(self)
+        QDialog.__init__(self)
 
         self.setWindowTitle("Detail")
 
         self.setCentralWidget(widget)
 
-        ## Exit QAction
+        # Exit QAction
         exit_action = QAction("Exit", self)
         exit_action.setShortcut(QKeySequence.Quit)
         exit_action.triggered.connect(self.close)

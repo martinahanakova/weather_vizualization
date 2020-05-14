@@ -1,15 +1,14 @@
-from PySide2.QtCore import QDateTime, Qt
-from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout)
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import (QWidget, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QDialog)
 
 from spiral import Spiral
 from windrose_plot import WindrosePlot
 from humidity_plot import HumidityPlot
 
 
-class DetailWidget(QWidget):
+class DetailWidget(QDialog):
     def __init__(self, data):
-        QWidget.__init__(self)
+        QDialog.__init__(self)
 
         self.data = data
 

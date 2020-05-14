@@ -1,11 +1,7 @@
-from PySide2.QtCore import QDateTime, Qt, QUrl, QModelIndex
-from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QPushButton, QMenu, QAction)
+from PySide2.QtCore import QUrl
+from PySide2.QtWidgets import (QPushButton, QMenu, QAction)
 from PySide2.QtQuickWidgets import QQuickWidget
 from PySide2.QtPositioning import QGeoCoordinate
-
-from detail_widget import DetailWidget
-from detail_window import DetailWindow
 
 import os
 
@@ -19,10 +15,6 @@ class MapWidget(QQuickWidget):
         self.data = data
         self.model = model
 
-        self.b1 = QPushButton(self)
-        self.b1.setText("click me")
-        self.b1.clicked.connect(self.onclick)
-
         self.rootContext().setContextProperty("markermodel", model)
         qml_path = os.path.join(os.path.dirname(__file__), "map.qml")
         self.setSource(QUrl.fromLocalFile(qml_path))
@@ -30,42 +22,38 @@ class MapWidget(QQuickWidget):
         positions = self.get_positions(self.data)
         names = self.get_names(self.data)
         values = self.get_values(self.data, "humidity")
-     #   self.interface()
 
         for i in range(0, len(names)):
             geo_coordinates = QGeoCoordinate(positions[i][0], positions[i][1])
             name = names[i]
             value = values[i]
-            #print(positions[i][0], positions[i][1], "green", name)
             model.appendMarker({"position": geo_coordinates, "color": "green", "name": name, "value": value})
-
 
         self.interface()
 
-    attribute = "wind_speed"
     def interface(self):
-
-     #   self.l1 = QLabel(self)
-      #  self.l1.setText("nothing selected")
-      #  self.l1.move(200,0)
+        # self.l1 = QLabel(self)
+        # self.l1.setText("nothing selected")
+        # self.l1.move(200,0)
 
         self.b1 = QPushButton(self)
-        self.b1.move(50,0)
-       # self.b1.setText(self.attribute)
-     #   self.b1.clicked.connect(self.clicked)
-    # TODO: add multichoice buttons for all attributes, each triggering change of values in model based on that button value
+        self.b1.move(50, 0)
+
+        # self.b1.setText(self.attribute)
+        # self.b1.clicked.connect(self.clicked)
+        # TODO: add multichoice buttons for all attributes, each triggering change of values in model based on that button value
+
         self.menu = QMenu("Pick an attribute", self)
 
-
-      #  self.menu.addAction("Humidity")
-      #  self.menu.triggered
-     #   self.menu.addAction("pressure")
-     #   self.menu.addAction("temperature")
-     #   self.menu.addAction("wind speed")
-      #  self.aHumidity = self.createAction("humidity")
-       # self.aPressure = self.createAction("pressure")
-      #  self.createAction("temperature")
-       # self.createAction("wind_speed")
+        # self.menu.addAction("Humidity")
+        # self.menu.triggered
+        # self.menu.addAction("pressure")
+        # self.menu.addAction("temperature")
+        # self.menu.addAction("wind speed")
+        # self.aHumidity = self.createAction("humidity")
+        # self.aPressure = self.createAction("pressure")
+        # self.createAction("temperature")
+        # self.createAction("wind_speed")
 
         # create a menu option for each attribute (in connect, lambda is necessary in order to be able to send custom params to function)
         self.aHumidity = QAction("humidity")
@@ -103,7 +91,6 @@ class MapWidget(QQuickWidget):
         for i in range (0,len(values)):
             self.model.setData(i, values[i], MarkerModel.ValueRole)
 
-
     def get_positions(self, data):
         tmp = data.drop_duplicates('city').sort_values(by=['city'])
         positions = [[x, y] for x, y in zip(tmp['latitude'], tmp['longitude'])]
@@ -118,7 +105,7 @@ class MapWidget(QQuickWidget):
         values = data.groupby('city').apply(lambda x: x[attribute].mean().round(2)).tolist() # groupby sorts rows by specified attribute by default
         return values
 
-    def createAction(self, attribute):
+    def create_action(self, attribute):
         action = QAction(attribute)
         action.triggered.connect(self.clicked(attribute))
         self.menu.addAction(action)

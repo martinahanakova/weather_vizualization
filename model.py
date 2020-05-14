@@ -1,12 +1,25 @@
-from PySide2.QtCore import (QAbstractListModel, Qt, QModelIndex)
+from PySide2.QtCore import (QAbstractListModel, Qt, QModelIndex, Slot)
+
+from detail_widget import DetailWidget
+from detail_window import DetailWindow
 
 
 class MarkerModel(QAbstractListModel):
     PositionRole, ColorRole, NameRole, ValueRole = range(Qt.UserRole, Qt.UserRole + 4)
 
-    def __init__(self, parent=None):
+    def __init__(self, data, parent=None):
         super(MarkerModel, self).__init__(parent)
         self._markers = []
+        self.model_data = data
+
+    @Slot(str)
+    def open_detail(self, city):
+        print(city)
+
+        widget = DetailWidget(self.model_data)
+        #window = DetailWindow(widget)
+
+        widget.show()
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._markers)
@@ -33,7 +46,6 @@ class MarkerModel(QAbstractListModel):
 
     def roleNames(self):
         return {MarkerModel.PositionRole: b"position_marker", MarkerModel.ColorRole: b"color_marker", MarkerModel.NameRole: b"name_marker", MarkerModel.ValueRole: b"value_marker"}
-
 
     def appendMarker(self, marker):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
