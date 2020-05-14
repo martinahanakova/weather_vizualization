@@ -1,29 +1,29 @@
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import (QWidget, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QDialog)
+from PySide2.QtWidgets import (QWidget, QVBoxLayout, QLabel, QSizePolicy, QGridLayout)
 
 from spiral import Spiral
 from windrose_plot import WindrosePlot
 from humidity_plot import HumidityPlot
 
 
-class DetailWidget(QDialog):
-    def __init__(self, data):
-        QDialog.__init__(self)
+class DetailWidget(QWidget):
+    def __init__(self, data, city):
+        QWidget.__init__(self)
 
         self.data = data
+        self.city = city
 
         # Creating Pressure Spiral
-        self.pressure_spiral = Spiral(data, 'Eilat', 'pressure')
+        self.pressure_spiral = Spiral(data, self.city, 'pressure')
 
         # Creating Windrose Plot
-        self.windrose_plot = WindrosePlot(data, 'Eilat')
+        self.windrose_plot = WindrosePlot(data, self.city)
 
         # Creating Humidity Plot
-        #self.humidity_plot = PolarPlot(data)
-        self.humidity_plot = HumidityPlot(data, 'Eilat')
+        self.humidity_plot = HumidityPlot(data, self.city)
 
         # Creating Temperature Spiral
-        self.temperature_spiral = Spiral(data, 'Eilat', 'temperature')
+        self.temperature_spiral = Spiral(data, self.city, 'temperature')
 
         # QWidget Layout
         self.layout = QGridLayout()

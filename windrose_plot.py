@@ -44,7 +44,7 @@ class WindrosePlot(QWidget):
         painter.end()
 
     def process_data(self, data, city):
-        filtered_city = data[data['city'] == city]
+        data = data[data['city'] == city]
 
         data = data[['wind_speed', 'wind_direction']]
         data_len = len(data)

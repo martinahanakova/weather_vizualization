@@ -16,10 +16,10 @@ class MarkerModel(QAbstractListModel):
     def open_detail(self, city):
         print(city)
 
-        widget = DetailWidget(self.model_data)
-        #window = DetailWindow(widget)
+        widget = DetailWidget(self.model_data, city)
+        self.dialog = DetailWindow(widget, city)
 
-        widget.show()
+        self.dialog.show()
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._markers)

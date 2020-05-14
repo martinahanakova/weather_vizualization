@@ -1,13 +1,13 @@
 from PySide2.QtCore import *
 from PySide2.QtGui import QKeySequence
-from PySide2.QtWidgets import QDialog, QAction
+from PySide2.QtWidgets import QMainWindow, QAction
 
 
-class DetailWindow(QDialog):
-    def __init__(self, widget):
-        QDialog.__init__(self)
+class DetailWindow(QMainWindow):
+    def __init__(self, widget, city):
+        QMainWindow.__init__(self)
 
-        self.setWindowTitle("Detail")
+        self.setWindowTitle("Detail of " + city)
 
         self.setCentralWidget(widget)
 
