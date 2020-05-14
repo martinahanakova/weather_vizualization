@@ -1,9 +1,8 @@
-from PySide2.QtWidgets import QWidget, QLabel
+from PySide2.QtWidgets import QWidget
 from PySide2.QtGui import QPixmap, QImage, QPainter
 from PySide2.QtCore import QByteArray, Qt
 
 import plotly.express as px
-import pandas as pd
 import numpy as np
 
 
@@ -30,7 +29,6 @@ class WindrosePlot(QWidget):
 
         figure.update_layout(legend=dict(font=dict(size=50)))
 
-        img_bytes = QByteArray()
         img_bytes = figure.to_image(format="png")
 
         img = QImage()
@@ -45,7 +43,7 @@ class WindrosePlot(QWidget):
         painter.end()
 
     def process_data(self, data, city):
-        filtered_city = data[data['city'] == city]
+        data = data[data['city'] == city]
 
         data = data[['wind_speed', 'wind_direction']]
         data_len = len(data)

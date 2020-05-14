@@ -1,7 +1,8 @@
-from PySide2.QtCore import QDateTime, Qt
-from PySide2.QtGui import QPainter
-from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout)
-from PySide2.QtCharts import QtCharts
+from PySide2.QtCore import Qt, QFile
+from PySide2 import QtUiTools
+from PySide2.QtWidgets import (QWidget, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QComboBox, QCheckBox)
+
+from functools import partial
 
 from spiral import Spiral
 from windrose_plot import WindrosePlot
@@ -9,88 +10,123 @@ from humidity_plot import HumidityPlot
 
 
 class DetailWidget(QWidget):
-    def __init__(self, data):
+    def __init__(self, data, city):
         QWidget.__init__(self)
 
         self.data = data
+        self.city = city
+
+        loader = QtUiTools.QUiLoader()
+        file = QFile("detail_interaction.ui")
+
+        # QWidget Grid Layout
+        self.grid_layout = QGridLayout()
 
         # Creating Pressure Spiral
-        self.pressure_spiral = Spiral(data, 'Eilat', 'pressure')
+        self.pressure_spiral = Spiral(data, city, 'pressure')
+        self.set_weather_widget("Pressure in hPa", self.pressure_spiral, 0, 0)
 
         # Creating Windrose Plot
-        self.windrose_plot = WindrosePlot(data, 'Eilat')
+        self.windrose_plot = WindrosePlot(data, city)
+        self.set_weather_widget("Wind speed in m/s", self.windrose_plot, 0, 1)
 
         # Creating Humidity Plot
-        #self.humidity_plot = PolarPlot(data)
-        self.humidity_plot = HumidityPlot(data, 'Eilat')
+        self.humidity_plot = HumidityPlot(data, city)
+        self.set_weather_widget("Humidity", self.humidity_plot, 1, 0)
 
         # Creating Temperature Spiral
-        self.temperature_spiral = Spiral(data, 'Eilat', 'temperature')
+        self.temperature_spiral = Spiral(data, city, 'temperature')
+        self.set_weather_widget("Temperature in °K", self.temperature_spiral, 1, 1)
+
+        # Intearction Panel Layout
+        self.interaction_panel = QWidget()
+        self.interaction_panel = loader.load(file)
+
+        # UI Elements For Pressure
+        pressure_ui_elements = (
+            self.interaction_panel.pressure_month_checkbox,
+            self.interaction_panel.pressure_day_checkbox,
+            self.interaction_panel.pressure_year_comboBox,
+            self.interaction_panel.pressure_month_comboBox,
+            self.interaction_panel.pressure_day_comboBox
+        )
+
+        # Connect UI Elements For Pressure
+        for element in pressure_ui_elements:
+
+            if isinstance(element, QComboBox):
+                f = element.currentTextChanged
+            elif isinstance(element, QCheckBox):
+                f = element.stateChanged
+
+            f.connect(partial(
+                self.stateChanged,
+                self.pressure_spiral,
+                *pressure_ui_elements
+            ))
+
+        # UI Elements For Temperature
+        temperature_ui_elements = (
+            self.interaction_panel.temperature_month_checkbox,
+            self.interaction_panel.temperature_day_checkbox,
+            self.interaction_panel.temperature_year_comboBox,
+            self.interaction_panel.temperature_month_comboBox,
+            self.interaction_panel.temperature_day_comboBox
+        )
+
+        # Connect UI Elements For Temperature
+        for element in temperature_ui_elements:
+
+            if isinstance(element, QComboBox):
+                f = element.currentTextChanged
+            elif isinstance(element, QCheckBox):
+                f = element.stateChanged
+
+            f.connect(partial(
+                self.stateChanged,
+                self.temperature_spiral,
+                *temperature_ui_elements
+            ))
 
         # QWidget Layout
         self.layout = QGridLayout()
-        size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
-        # Left Top Layout
-        self.left_top_layout = QVBoxLayout()
-
-        size.setVerticalStretch(1)
-        text = QLabel("<h1 color=blue>Pressure in hPa</h1>", self)
-        text.setSizePolicy(size)
-        text.setAlignment(Qt.AlignCenter)
-        self.left_top_layout.addWidget(text)
-
-        size.setVerticalStretch(4)
-        self.pressure_spiral.setSizePolicy(size)
-        self.left_top_layout.addWidget(self.pressure_spiral)
-
-        self.layout.addLayout(self.left_top_layout , 0, 0)
-
-        # Rigt Top Layout
-        self.right_top_layout = QVBoxLayout()
-
-        size.setVerticalStretch(1)
-        text = QLabel("<h1 color=blue>Wind speed in m/s</h1>", self)
-        text.setSizePolicy(size)
-        text.setAlignment(Qt.AlignCenter)
-        self.right_top_layout.addWidget(text)
-
-        size.setVerticalStretch(4)
-        self.windrose_plot.setSizePolicy(size)
-        self.right_top_layout.addWidget(self.windrose_plot)
-
-        self.layout.addLayout(self.right_top_layout , 0, 1)
-
-        # Left Bottom Layout
-        self.left_bottom_layout = QVBoxLayout()
-
-        size.setVerticalStretch(1)
-        text = QLabel("<h1 color=blue>Humidity</h1>", self)
-        text.setSizePolicy(size)
-        text.setAlignment(Qt.AlignCenter)
-        self.left_bottom_layout.addWidget(text)
-
-        size.setVerticalStretch(4)
-        self.humidity_plot.setSizePolicy(size)
-        self.left_bottom_layout.addWidget(self.humidity_plot)
-
-        self.layout.addLayout(self.left_bottom_layout , 1, 0)
-
-        # Right Bottom Layout
-        self.right_bottom_layout = QVBoxLayout()
-
-        size.setVerticalStretch(1)
-        text = QLabel("<h1 color=blue>Temperature in °K</h1>", self)
-        text.setSizePolicy(size)
-        text.setAlignment(Qt.AlignCenter)
-        self.right_bottom_layout.addWidget(text)
-
-        size.setVerticalStretch(4)
-        self.temperature_spiral.setSizePolicy(size)
-        self.right_bottom_layout.addWidget(self.temperature_spiral)
-
-        self.layout.addLayout(self.right_bottom_layout , 1, 1)
+        self.layout.addLayout(self.grid_layout, 0, 0, 1, 3)
+        self.layout.addWidget(self.interaction_panel, 0, 3, 1, 1)
 
         # Set the layout to the QWidget
         self.setLayout(self.layout)
 
+    def set_weather_widget(self, heading, plot, grid_pos_1, grid_pos_2):
+        layout = QVBoxLayout()
+        size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        size.setVerticalStretch(1)
+        text = QLabel("<h1 color=blue>"+heading+"</h1>", self)
+        text.setSizePolicy(size)
+        text.setAlignment(Qt.AlignCenter)
+        layout.addWidget(text)
+
+        size.setVerticalStretch(4)
+        plot.setSizePolicy(size)
+        layout.addWidget(plot)
+
+        self.grid_layout.addLayout(layout , grid_pos_1, grid_pos_2)
+
+        return
+
+    def stateChanged(self, widget, monthCheckBox, dayCheckBox, yearComboBox, monthComboBox, dayComboBox, arg):
+        if monthCheckBox.isChecked():
+            year = yearComboBox.currentText()
+            month = monthComboBox.currentIndex() + 1
+
+            if dayCheckBox.isChecked():
+                day = dayComboBox.currentText()
+                widget.set_paint(0, 0, 1, year, month, day)
+            else:
+                widget.set_paint(0, 1, 0, year, month)
+
+            widget.update()
+        else:
+            widget.set_paint(1, 0, 0)
+            widget.update()
