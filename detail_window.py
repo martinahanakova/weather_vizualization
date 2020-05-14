@@ -4,10 +4,10 @@ from PySide2.QtWidgets import QMainWindow, QAction
 
 
 class DetailWindow(QMainWindow):
-    def __init__(self, widget):
+    def __init__(self, widget, city):
         QMainWindow.__init__(self)
 
-        self.setWindowTitle("Detail")
+        self.setWindowTitle("Detail of " + city)
 
         self.setCentralWidget(widget)
 

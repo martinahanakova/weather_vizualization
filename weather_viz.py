@@ -1,9 +1,8 @@
 from PySide2.QtWidgets import QApplication
 
+from model import MarkerModel
+from map_widget import MapWidget
 from main_window import MainWindow
-from main_widget import Widget
-from detail_widget import DetailWidget
-from detail_window import DetailWindow
 
 import sys
 import argparse
@@ -26,12 +25,10 @@ if __name__ == "__main__":
     # Qt Application
     app = QApplication(sys.argv)
 
-    city = 'Vancouver'
-    widget = DetailWidget(data, city)
-    window = DetailWindow(widget)
+    model = MarkerModel(data)
+    widget = MapWidget(data, model)
+    window = MainWindow(widget)
 
-    #widget = Widget(data)
-    #window = MainWindow(widget)
     window.show()
 
     sys.exit(app.exec_())
