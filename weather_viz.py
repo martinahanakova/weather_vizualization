@@ -5,6 +5,8 @@ from map_widget import MapWidget
 from main_window import MainWindow
 from detail_widget import DetailWidget
 from detail_window import DetailWindow
+from bars_widget_test import BarsWidgetTest
+
 
 import sys
 import argparse
@@ -32,6 +34,7 @@ if __name__ == "__main__":
 
     model = MarkerModel()
     widget = MapWidget(data, model)
+    #widget = BarsWidgetTest(data, model)
     window = MainWindow(widget)
 
     window.show()

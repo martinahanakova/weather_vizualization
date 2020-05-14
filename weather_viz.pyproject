@@ -1,3 +1,3 @@
 {
-    "files": ["spiral.py","windrose_plot.py","weather_viz.py","table_model.py","map.qml","detail_widget.py","map_widget.py","humidity_plot.py","cube.qml","main_widget.py","detail_window.py","model.py","main_window.py","Attribute_bar.qml","Attribute_barForm.ui.qml"]
+    "files": ["spiral.py","bars_test.qml","model.py","main_widget.py","map.qml","table_model.py","map_widget.py","detail_widget.py","weather_viz.py","detail_window.py","windrose_plot.py","main_window.py","humidity_plot.py","bars_widget_test.py"]
 }
