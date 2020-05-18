@@ -203,7 +203,7 @@ class Spiral(QWidget):
         data['day'] = data['datetime'].dt.day
         data['hour'] = data['datetime'].dt.hour
 
-        tmp = data.groupby(['city','month_year']).agg({attribute : 'mean'})
+        tmp = data.groupby(['city', 'month_year']).agg({attribute: 'mean'})
 
         max_value = round(tmp[attribute].max())
         min_value = round(tmp[attribute].min())

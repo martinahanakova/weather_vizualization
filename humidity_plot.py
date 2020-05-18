@@ -1,11 +1,9 @@
-from PySide2.QtCore import Qt, QRect, QPointF
-from PySide2.QtGui import QPainter, QColor, QPen, QLinearGradient, QBrush, QPolygonF
-from PySide2.QtWidgets import (QWidget, QGridLayout)
-from PySide2.QtCharts import QtCharts
+from PySide2.QtCore import Qt, QPointF
+from PySide2.QtGui import QPainter, QColor, QPen, QPolygonF
+from PySide2.QtWidgets import (QWidget)
 
 import numpy
 import pandas as pd
-import math
 
 
 class HumidityPlot(QWidget):
@@ -21,17 +19,46 @@ class HumidityPlot(QWidget):
 
         self.arc_line_width = 1.0
         self.pi = 3.141592654
-
-        self.labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
-    def paintEvent(self, event):
-        width  = self.width()
-        height = self.height()
-
-        painter = QPainter(self)
-
         self.radius = 0.85
 
+        self.month_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+        self.all_flag = 1
+        self.year_flag = 0
+        self.month_flag = 0
+        self.day_flag = 0
+        self.hour_flag = 0
+
+        self.year = None
+        self.month = None
+        self.day = None
+        self.hour = None
+
+    def set_paint(self, all_flag, year_flag, month_flag, day_flag, year=None, month=None, day=None):
+        self.all_flag = all_flag
+        self.year_flag = year_flag
+        self.month_flag = month_flag
+        self.day_flag = day_flag
+
+        self.year = year
+        self.month = month
+        self.day = day
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+
+        if self.all_flag:
+            self.paint_all(painter)
+        elif self.year_flag:
+            self.paint_detail(painter, 0, 0)
+        elif self.month_flag:
+            self.paint_detail(painter, 1, 0)
+        elif self.day_flag:
+            self.paint_detail(painter, 1, 1)
+
+        painter.end()
+
+    def paint_all(self, painter):
         x0 = 0.0 + (self.width() - self.height())/self.height()
         y0 = 0.0
 
@@ -43,38 +70,57 @@ class HumidityPlot(QWidget):
 
         months = 12
 
-        proccessed_data = self.process_data(self.data, self.city, self.radius)
+        processed_data = self.process_data(self.data, self.city, self.radius)
 
         for month_id in range(months):
-            self.paint_arc_for_month(painter, proccessed_data, x0, y0, month_id)
+            self.paint_arc_for_month(painter, processed_data, x0, y0, month_id+1, months, 'month')
 
-        for i in range(months):
-                    angle = 2.0*self.pi * i/months
+        self.paint_spacing_lines(painter, x, y, months)
 
-                    # Point 2 Coordinates
-                    x_p2 = self.radius*(height/2)*numpy.cos(angle)
-                    y_p2 = self.radius*(height/2)*numpy.sin(angle)
+        self.paint_labels(painter, x0, y0, self.radius, self.month_labels)
 
-                    x_2 = int(x + x_p2)
-                    y_2 = int(y + y_p2)
+    def paint_detail(self, painter, month_flag, day_flag):
+        x0 = 0.0 + (self.width() - self.height()) / self.height()
+        y0 = 0.0
 
-                    painter.drawLine(QPointF(x, y), QPointF(x_2, y_2))
+        x, y = self.convert_center(0.0, 0.0)
 
-        self.paint_labels(painter, x0, y0, self.radius, self.labels)
+        painter.setPen(QPen(Qt.white, 2, Qt.SolidLine))
 
-        painter.end()
+        painter.drawEllipse(QPointF(x, y), self.radius * self.height() / 2, self.radius * self.height() / 2)
 
-    def paint_arc_for_month(self, painter, data, x0, y0, month_id, months = 12):
+        processed_data = self.process_detail_data(self.data, self.city, self.radius, month_flag, day_flag)
+
+        count_of_steps = len(processed_data)
+
+        if month_flag and not day_flag:
+            labels = processed_data['day']
+            time_period = 'day'
+        elif day_flag:
+            labels = processed_data['hour']
+            time_period = 'hour'
+        else:
+            labels = processed_data['month_name']
+            time_period = 'month'
+
+        for step in processed_data[time_period]:
+            self.paint_arc_for_month(painter, processed_data, x0, y0, step, count_of_steps, time_period)
+
+        self.paint_spacing_lines(painter, x, y, count_of_steps)
+
+        self.paint_labels(painter, x0, y0, self.radius, labels)
+
+    def paint_arc_for_month(self, painter, data, x0, y0, step, count_of_steps=12, time_period=None):
         painter.setPen(QPen(self.arc_line_color, self.arc_line_width, Qt.SolidLine))
         painter.setBrush(self.arc_fill_color)
 
-        month_data = data[data['month'] == month_id+1]
+        filtered_data = data[data[time_period] == step]
 
-        for i in range(len(month_data)):
-            arc_length = 2.0*self.pi/months
-            phi_center = 2.0*self.pi*month_id/months
+        for i in range(len(filtered_data)):
+            arc_length = 2.0*self.pi/count_of_steps
+            phi_center = 2.0*self.pi*(step-1)/count_of_steps
 
-            arc_radius = month_data["sum_accross_years"].loc[month_data.index.values[i]]
+            arc_radius = filtered_data["radius"].loc[filtered_data.index.values[i]]
 
             polygon_points = self.compute_circle_arc_polygon(x0, y0, arc_radius, phi_center, arc_length)
             painter.drawConvexPolygon(polygon_points)
@@ -103,20 +149,23 @@ class HumidityPlot(QWidget):
 
         return polygon
 
-    def paint_spacing_lines(self, painter, x0, y0, radius, steps):
+    def paint_spacing_lines(self, painter, x, y, count_of_steps):
         painter.setPen(QPen(self.text_color, 2, Qt.SolidLine))
         painter.setBrush(self.text_color)
 
-        for n in range(steps):
-            phi = 2.0*self.pi*n/steps
+        height = self.height()
 
-            x1 = x0 + radius*numpy.cos(phi)
-            y1 = y0 + radius*numpy.sin(phi)
+        for i in range(count_of_steps):
+            angle = 2.0 * self.pi * i / count_of_steps
 
-            x0_t, y0_t = self.convert_position(x0, y0)
-            x1_t, y1_t = self.convert_position(x1, y1)
+            # Point 2 Coordinates
+            x_p2 = self.radius * (height / 2) * numpy.cos(angle)
+            y_p2 = self.radius * (height / 2) * numpy.sin(angle)
 
-            painter.drawLine(x0_t, y0_t, x1_t, y1_t)
+            x_2 = x + x_p2
+            y_2 = y + y_p2
+
+            painter.drawLine(QPointF(x, y), QPointF(x_2, y_2))
 
     def paint_labels(self, painter, x0, y0, radius, labels):
         steps = len(labels)
@@ -131,26 +180,24 @@ class HumidityPlot(QWidget):
 
             xt, yt = self.convert_position(x1, y1)
 
-            text = labels[n]
+            text = str(labels[n])
             painter.setPen(QPen(self.text_color, 2, Qt.SolidLine))
-            painter.drawText(xt, yt, labels[n])
+            painter.drawText(xt, yt, text)
 
     def convert_position(self, x, y):
-        width  = self.width()
+        width = self.width()
         height = self.height()
 
         d = numpy.min([width, height])
 
-        x_t = int(d*(x + 1.0)/2.0)
-        y_t = int(d*(y + 1.0)/2.0)
+        x_t = d*(x + 1.0)/2.0
+        y_t = d*(y + 1.0)/2.0
 
         return x_t, y_t
 
     def convert_center(self, x, y):
         width  = self.width()
         height = self.height()
-
-        d = numpy.min([width, height])
 
         x_t = int(width*(x + 1.0)/2.0)
         y_t = int(height*(y + 1.0)/2.0)
@@ -177,7 +224,7 @@ class HumidityPlot(QWidget):
 
         att_data['per_year_from_radius'] = att_data['humidity'].apply(lambda x: ((x / max_value) / count_years) * radius)
 
-        att_data['sum_accross_years'] = ""
+        att_data['radius'] = ""
         previous_month = 1
         sum_values = 0
 
@@ -190,10 +237,48 @@ class HumidityPlot(QWidget):
                 else:
                     sum_values = sum_values + att_data["per_year_from_radius"].loc[att_data.index.values[row]]
 
-                att_data.loc[att_data.index.values[row], "sum_accross_years"] = sum_values
+                att_data.loc[att_data.index.values[row], "radius"] = sum_values
 
         att_data = att_data.sort_values(['month', 'year'], ascending=[True, False])
         att_data = att_data.reset_index(drop=True)
 
         return att_data
 
+    def process_detail_data(self, data, city, radius, month_flag, day_flag):
+        data['datetime'] = pd.to_datetime(data['datetime'])
+
+        data['year'] = data['datetime'].dt.year
+        data['month'] = data['datetime'].dt.month
+        data['day'] = data['datetime'].dt.day
+        data['hour'] = data['datetime'].dt.hour
+
+        filtered_city = data[data['city'] == city]
+
+        filtered_data = filtered_city[filtered_city['year'] == int(self.year)]
+
+        if month_flag:
+            filtered_data = filtered_data[filtered_data['month'] == int(self.month)]
+
+            if day_flag:
+                filtered_data = filtered_data[filtered_data['day'] == int(self.day)]
+                att_data = filtered_data[['datetime', 'humidity', 'hour']]
+            else:
+                att_data = filtered_data[['datetime', 'humidity', 'day']]
+                att_data = att_data.groupby('day').agg({'humidity': 'mean'})
+        else:
+            att_data = filtered_data[['datetime', 'humidity', 'month']]
+            att_data = att_data.groupby('month').agg({'humidity': 'mean'})
+
+        att_data = att_data.reset_index()
+
+        max_value = att_data['humidity'].max()
+
+        att_data['radius'] = att_data['humidity'].apply(
+            lambda x: (x / max_value) * radius)
+
+        months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", \
+                  7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
+
+        att_data['month_name'] = att_data['month'].apply(lambda x: months.get(x))
+
+        return att_data
