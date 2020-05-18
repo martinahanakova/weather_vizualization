@@ -1,9 +1,10 @@
 from PySide2.QtWidgets import QWidget
 from PySide2.QtGui import QPixmap, QImage, QPainter
-from PySide2.QtCore import QByteArray, Qt
+from PySide2.QtCore import Qt
 
 import plotly.express as px
 import numpy as np
+import pandas as pd
 
 
 class WindrosePlot(QWidget):
@@ -13,10 +14,47 @@ class WindrosePlot(QWidget):
         self.data = data
         self.city = city
 
-    def paintEvent(self, event):
-        wind_data = self.process_data(self.data, self.city)
+        self.all_flag = 1
+        self.year_flag = 0
+        self.month_flag = 0
+        self.day_flag = 0
+        self.hour_flag = 0
 
+        self.year = None
+        self.month = None
+        self.day = None
+        self.hour = None
+
+    def set_paint(self, all_flag, year_flag, month_flag, day_flag, hour_flag, year=None, month=None, day=None, hour=None):
+        self.all_flag = all_flag
+        self.year_flag = year_flag
+        self.month_flag = month_flag
+        self.day_flag = day_flag
+        self.hour_flag = hour_flag
+
+        self.year = year
+        self.month = month
+        self.day = day
+        self.hour = hour
+
+    def paintEvent(self, event):
         painter = QPainter(self)
+
+        if self.all_flag:
+            self.paint_all(painter, 0, 0, 0, 0)
+        elif self.year_flag:
+            self.paint_all(painter, 1, 0, 0, 0)
+        elif self.month_flag:
+            self.paint_all(painter, 1, 1, 0, 0)
+        elif self.day_flag:
+            self.paint_all(painter, 1, 1, 1, 0)
+        elif self.hour_flag:
+            self.paint_all(painter, 1, 1, 1, 1)
+
+        painter.end()
+
+    def paint_all(self, painter, year_flag, month_flag, day_flag, hour_flag):
+        wind_data = self.process_data(self.data, self.city, year_flag, month_flag, day_flag, hour_flag)
 
         figure = px.bar_polar(wind_data, r="frequency", theta="direction",\
                            color="wind_speed", template="plotly_dark",\
@@ -40,10 +78,27 @@ class WindrosePlot(QWidget):
 
         painter.drawPixmap(0, 0, pixmap)
 
-        painter.end()
+    def process_data(self, data, city, year_flag, month_flag, day_flag, hour_flag):
+        data['datetime'] = pd.to_datetime(data['datetime'])
 
-    def process_data(self, data, city):
+        data['year'] = data['datetime'].dt.year
+        data['month'] = data['datetime'].dt.month
+        data['day'] = data['datetime'].dt.day
+        data['hour'] = data['datetime'].dt.hour
+
         data = data[data['city'] == city]
+
+        if year_flag:
+            data = data[data['year'] == int(self.year)]
+
+            if month_flag:
+                data = data[data['month'] == int(self.month)]
+
+                if day_flag:
+                    data = data[data['day'] == int(self.day)]
+
+                    if hour_flag:
+                        data = data[data['hour'] == int(self.hour)]
 
         data = data[['wind_speed', 'wind_direction']]
         data_len = len(data)

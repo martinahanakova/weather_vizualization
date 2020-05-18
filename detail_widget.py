@@ -60,10 +60,60 @@ class DetailWidget(QWidget):
                 f = element.stateChanged
 
             f.connect(partial(
-                self.stateChanged,
+                self.spiralStateChanged,
                 self.pressure_spiral,
                 *pressure_ui_elements
             ))
+
+        # UI Elements For Wind
+        wind_ui_elements = (
+            self.interaction_panel.wind_year_checkbox,
+            self.interaction_panel.wind_month_checkbox,
+            self.interaction_panel.wind_day_checkbox,
+            self.interaction_panel.wind_hour_checkbox,
+            self.interaction_panel.wind_year_comboBox,
+            self.interaction_panel.wind_month_comboBox,
+            self.interaction_panel.wind_day_comboBox,
+            self.interaction_panel.wind_hour_comboBox
+        )
+
+        # Connect UI Elements For Wind
+        for element in wind_ui_elements:
+
+            if isinstance(element, QComboBox):
+                f = element.currentTextChanged
+            elif isinstance(element, QCheckBox):
+                f = element.stateChanged
+
+            f.connect(partial(
+                self.windStateChanged,
+                self.windrose_plot,
+                *wind_ui_elements
+            ))
+
+        # UI Elements For Humidity
+        humidity_ui_elements = (
+            self.interaction_panel.humidity_year_checkbox,
+            self.interaction_panel.humidity_month_checkbox,
+            self.interaction_panel.humidity_day_checkbox,
+            self.interaction_panel.humidity_year_comboBox,
+            self.interaction_panel.humidity_month_comboBox,
+            self.interaction_panel.humidity_day_comboBox
+            )
+
+        # Connect UI Elements For Humidity
+        for element in humidity_ui_elements:
+
+                if isinstance(element, QComboBox):
+                    f = element.currentTextChanged
+                elif isinstance(element, QCheckBox):
+                    f = element.stateChanged
+
+                f.connect(partial(
+                    self.humidityStateChanged,
+                    self.humidity_plot,
+                    *humidity_ui_elements
+                ))
 
         # UI Elements For Temperature
         temperature_ui_elements = (
@@ -83,7 +133,7 @@ class DetailWidget(QWidget):
                 f = element.stateChanged
 
             f.connect(partial(
-                self.stateChanged,
+                self.spiralStateChanged,
                 self.temperature_spiral,
                 *temperature_ui_elements
             ))
@@ -115,7 +165,7 @@ class DetailWidget(QWidget):
 
         return
 
-    def stateChanged(self, widget, monthCheckBox, dayCheckBox, yearComboBox, monthComboBox, dayComboBox, arg):
+    def spiralStateChanged(self, widget, monthCheckBox, dayCheckBox, yearComboBox, monthComboBox, dayComboBox, arg):
         if monthCheckBox.isChecked():
             year = yearComboBox.currentText()
             month = monthComboBox.currentIndex() + 1
@@ -129,4 +179,55 @@ class DetailWidget(QWidget):
             widget.update()
         else:
             widget.set_paint(1, 0, 0)
+            widget.update()
+
+        return
+
+    def humidityStateChanged(self, widget, yearCheckBox, monthCheckBox, dayCheckBox,
+                           yearComboBox, monthComboBox, dayComboBox, arg):
+
+        if yearCheckBox.isChecked():
+            year = yearComboBox.currentText()
+
+            if monthCheckBox.isChecked():
+                month = monthComboBox.currentIndex() + 1
+
+                if dayCheckBox.isChecked():
+                    day = dayComboBox.currentText()
+                    widget.set_paint(0, 0, 0, 1, year, month, day)
+                else:
+                    widget.set_paint(0, 0, 1, 0, year, month)
+            else:
+                widget.set_paint(0, 1, 0, 0, year)
+
+            widget.update()
+        else:
+            widget.set_paint(1, 0, 0, 0)
+            widget.update()
+
+    def windStateChanged(self, widget, yearCheckBox, monthCheckBox, dayCheckBox, hourCheckBox,
+                           yearComboBox, monthComboBox, dayComboBox, hourComboBox, arg):
+
+        if yearCheckBox.isChecked():
+            year = yearComboBox.currentText()
+
+            if monthCheckBox.isChecked():
+                month = monthComboBox.currentIndex() + 1
+
+                if dayCheckBox.isChecked():
+                    day = dayComboBox.currentText()
+
+                    if hourCheckBox.isChecked():
+                        hour = hourComboBox.currentText()
+                        widget.set_paint(0, 0, 0, 0, 1, year, month, day, hour)
+                    else:
+                        widget.set_paint(0, 0, 0, 1, 0, year, month, day)
+                else:
+                    widget.set_paint(0, 0, 1, 0, 0, year, month)
+            else:
+                widget.set_paint(0, 1, 0, 0, 0, year)
+
+            widget.update()
+        else:
+            widget.set_paint(1, 0, 0, 0, 0)
             widget.update()
