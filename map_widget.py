@@ -1,10 +1,12 @@
 from PySide2.QtCore import QDateTime, Qt, QUrl, QModelIndex
-from PySide2.QtGui import QPainter
+from PySide2.QtGui import QPainter, QColor
 from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QPushButton, QMenu, QAction)
 from PySide2.QtQuickWidgets import QQuickWidget
 from PySide2.QtPositioning import QGeoCoordinate
 
 import os
+import numpy
+import pandas as pd
 
 from model import MarkerModel
 
@@ -23,24 +25,23 @@ class MapWidget(QQuickWidget):
         positions = self.get_positions(self.data)
         names = self.get_names(self.data)
         values = self.get_values(self.data, "humidity")
-     #   self.interface()
+        colors = self.get_colors(self.data, "humidity")
 
         for i in range(0, len(names)):
             geo_coordinates = QGeoCoordinate(positions[i][0], positions[i][1])
             name = names[i]
             value = values[i]
+            color = colors[i] # QJS value , needs to be QColor
+           # color = QColor(color_tmp[0], color_tmp[1], color_tmp[2], 255)
             #print(positions[i][0], positions[i][1], "green", name)
-            model.appendMarker({"position": geo_coordinates, "color": "green", "name": name, "value": value})
+            model.appendMarker({"position": geo_coordinates, "color": color, "name": name, "value": value})
 
 
         self.interface()
+      #  print(self.get_colors(self.data, "humidity"))
 
     attribute = "wind_speed"
     def interface(self):
-
-     #   self.l1 = QLabel(self)
-      #  self.l1.setText("nothing selected")
-      #  self.l1.move(200,0)
 
         self.b1 = QPushButton(self)
         self.b1.move(50,0)
@@ -48,17 +49,6 @@ class MapWidget(QQuickWidget):
      #   self.b1.clicked.connect(self.clicked)
     # TODO: add multichoice buttons for all attributes, each triggering change of values in model based on that button value
         self.menu = QMenu("Pick an attribute", self)
-
-
-      #  self.menu.addAction("Humidity")
-      #  self.menu.triggered
-     #   self.menu.addAction("pressure")
-     #   self.menu.addAction("temperature")
-     #   self.menu.addAction("wind speed")
-      #  self.aHumidity = self.createAction("humidity")
-       # self.aPressure = self.createAction("pressure")
-      #  self.createAction("temperature")
-       # self.createAction("wind_speed")
 
         # create a menu option for each attribute (in connect, lambda is necessary in order to be able to send custom params to function)
         self.aHumidity = QAction("humidity")
@@ -91,10 +81,11 @@ class MapWidget(QQuickWidget):
         self.b1.setText(attribute)
     #    self.l1.setText("selected attribute: "+attribute)
         values = self.get_values(self.data, attribute)
+        colors = self.get_colors(self.data, attribute)
        # self.model.setData(0, values[0], MarkerModel.ValueRole)
         print(attribute)
         for i in range (0,len(values)):
-            self.model.setData(i, values[i], MarkerModel.ValueRole)
+            self.model.setData(i, values[i], colors[i], MarkerModel.ValueRole)
 
 
     def get_positions(self, data):
@@ -110,6 +101,47 @@ class MapWidget(QQuickWidget):
     def get_values(self, data, attribute): # creates an ordered list of aggregated values of a specified attribute
         values = data.groupby('city').apply(lambda x: x[attribute].mean().round(2)).tolist() # groupby sorts rows by specified attribute by default
         return values
+
+    def get_colors(self, data, attribute):
+        tmp = data.groupby('city').agg({attribute : 'mean'})
+
+        max_value = round(tmp[attribute].max())
+        min_value = round(tmp[attribute].min())
+
+        diff = max_value - min_value
+        step = round(1 / 6 * diff)
+
+        if attribute == 'pressure':
+            attribute_values = {0: [255,255,255], 1: [204,229,255], 2: [102,178,255], 3: [0,128,255], \
+            4: [0,0,255], 5: [0,0,102], 6: [0,0,51]}
+        elif attribute == 'temperature':
+            attribute_values = {0: [0,102,204], 1: [102,178,255], 2: [204,229,255], 3: [255,204,204], \
+            4: [255,102,102], 5: [204,0,0], 6: [102,0,0]}
+            # create custom colors for humidity and wind speed
+        elif attribute == 'humidity':
+            attribute_values = {0: [0,102,204], 1: [102,178,255], 2: [204,229,255], 3: [255,204,204], \
+            4: [255,102,102], 5: [204,0,0], 6: [102,0,0]}
+        elif attribute == 'wind_speed':
+            attribute_values = {0: [0,102,204], 1: [102,178,255], 2: [204,229,255], 3: [255,204,204], \
+            4: [255,102,102], 5: [204,0,0], 6: [102,0,0]}
+
+        values = numpy.array([min_value, min_value + 1*step, min_value + 2*step, min_value + 3*step, \
+        min_value + 4*step, min_value + 5*step, max_value])
+
+        tmp['distances'] = tmp[attribute].apply(lambda x: abs(x - values))
+        tmp['index'] = tmp['distances'].apply(lambda x: numpy.argmin(x))
+        tmp['color'] = tmp['index'].apply(lambda x: attribute_values.get(x))
+
+        colors = tmp['color'].tolist()
+        colors_list = []
+
+        for color_tmp in colors:
+            color = QColor(color_tmp[0], color_tmp[1], color_tmp[2], 255)
+            colors_list.append(color)
+
+
+
+        return colors_list # returns QJSValue
 
     def createAction(self, attribute):
         action = QAction(attribute)
