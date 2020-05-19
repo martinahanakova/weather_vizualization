@@ -36,19 +36,16 @@ class MapWidget(QQuickWidget):
             #print(positions[i][0], positions[i][1], "green", name)
             model.appendMarker({"position": geo_coordinates, "color": color, "name": name, "value": value})
 
-
         self.interface()
       #  print(self.get_colors(self.data, "humidity"))
 
-    attribute = "wind_speed"
     def interface(self):
+        # self.l1 = QLabel(self)
+        # self.l1.setText("nothing selected")
+        # self.l1.move(200,0)
 
         self.b1 = QPushButton(self)
-        self.b1.move(50,0)
-       # self.b1.setText(self.attribute)
-     #   self.b1.clicked.connect(self.clicked)
-    # TODO: add multichoice buttons for all attributes, each triggering change of values in model based on that button value
-        self.menu = QMenu("Pick an attribute", self)
+        self.b1.move(50, 0)
 
         # create a menu option for each attribute (in connect, lambda is necessary in order to be able to send custom params to function)
         self.aHumidity = QAction("humidity")
@@ -86,7 +83,6 @@ class MapWidget(QQuickWidget):
         print(attribute)
         for i in range (0,len(values)):
             self.model.setData(i, values[i], colors[i], MarkerModel.ValueRole)
-
 
     def get_positions(self, data):
         tmp = data.drop_duplicates('city').sort_values(by=['city'])

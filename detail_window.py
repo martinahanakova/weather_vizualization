@@ -4,14 +4,14 @@ from PySide2.QtWidgets import QMainWindow, QAction
 
 
 class DetailWindow(QMainWindow):
-    def __init__(self, widget):
+    def __init__(self, widget, city):
         QMainWindow.__init__(self)
 
-        self.setWindowTitle("Detail")
+        self.setWindowTitle("Detail of " + city)
 
         self.setCentralWidget(widget)
 
-        ## Exit QAction
+        # Exit QAction
         exit_action = QAction("Exit", self)
         exit_action.setShortcut(QKeySequence.Quit)
         exit_action.triggered.connect(self.close)

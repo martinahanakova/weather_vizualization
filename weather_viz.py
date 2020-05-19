@@ -32,7 +32,7 @@ if __name__ == "__main__":
     #widget = DetailWidget(data)
     #window = DetailWindow(widget)
 
-    model = MarkerModel()
+    model = MarkerModel(data)
     widget = MapWidget(data, model)
     #widget = BarsWidgetTest(data, model)
     window = MainWindow(widget)

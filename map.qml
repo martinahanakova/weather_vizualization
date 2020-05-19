@@ -5,20 +5,6 @@ import QtDataVisualization 1.2
 import QtQuick.Controls 2.14
 
 
-//import QtQuick3D 1.14
-
-
-
-/*Rectangle {
-    id:rectangle
-    width: 640
-    height: 480
-    Plugin {
-        id: osmPlugin
-        name: "osm"
-    }
-    */
-
 Rectangle {
     id:rectangle
     width: 640
@@ -28,18 +14,17 @@ Rectangle {
         name: "osm"
     }
 
-    property variant locationTC: QtPositioning.coordinate(44.951, -93.192)
     Map {
         id: map
         anchors.fill: parent
         plugin: osmPlugin
-        center: locationTC
+        zoomLevel: 1
         minimumTilt: 10
         maximumTilt: 80
-        zoomLevel: 5
         MapItemView{
             id: mapItemView
             model: markermodel
+
             delegate: MapQuickItem {
                 zoomLevel: 6
                 coordinate: model.position_marker
@@ -55,16 +40,14 @@ Rectangle {
                         id: rectangle2
                         width: 50
                         height: 100
-                     //   transformOrigin: Item.Center
-                    //    transform: Rotation {origin.x: 20; origin.y: 20; axis { x: 1; y: 0; z: 0 } angle: -80 }
-                      //  rotation: 14
+                        // transform: Rotation {origin.x: 20; origin.y: 20; axis { x: 0; y: 1; z: 0 } angle: -90 }
+                        // rotation: 90
 
                         color: model.color_marker
                         border.color: "black"
                         border.width: 5
                         radius: 10
                         opacity: 0.7
-
 
                         Text {
                             anchors.bottom: parent.top
@@ -82,14 +65,18 @@ Rectangle {
                                 ToolTip.text: qsTr("Double-click to open detail window")
 
                                 onEntered: {
-                                 //   parent.color = 'red'
+                                    // parent.color = 'red'
                                     parent.opacity = 1
                                     ToolTip.visible = true
-                         }
+                                }
                                 onExited: {
                                     parent.color = model.color_marker
                                     parent.opacity = 0.7
                                     ToolTip.visible = false
+                                }
+                                onDoubleClicked: {
+                                  console.log("Clicked")
+                                  markermodel.open_detail(model.name_marker)
                                 }
                                 /*
                                 TODO: on clicked - duplicate the view somewhere (top part of screen or window)
@@ -128,3 +115,4 @@ Rectangle {
         }
     }
 }
+

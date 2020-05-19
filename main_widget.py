@@ -5,10 +5,6 @@ from PySide2.QtCharts import QtCharts
 
 from table_model import CustomTableModel
 
-from matplotlib import pyplot as plt
-import matplotlib.cm as cm
-import numpy as np
-
 
 class Widget(QWidget):
     def __init__(self, data):
