@@ -117,10 +117,10 @@ class HumidityPlot(QWidget):
         filtered_data = data[data[time_period] == step]
 
         for i in range(len(filtered_data)):
-            arc_length = 2.0*self.pi/count_of_steps
-            phi_center = 2.0*self.pi*(step-1)/count_of_steps
-
             arc_radius = filtered_data["radius"].loc[filtered_data.index.values[i]]
+
+            arc_length = 2.0*self.pi/count_of_steps*1.03
+            phi_center = 2.0*self.pi*(step-1)/count_of_steps
 
             polygon_points = self.compute_circle_arc_polygon(x0, y0, arc_radius, phi_center, arc_length)
             painter.drawConvexPolygon(polygon_points)
@@ -279,6 +279,7 @@ class HumidityPlot(QWidget):
         months = {1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", \
                   7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"}
 
-        att_data['month_name'] = att_data['month'].apply(lambda x: months.get(x))
+        if not month_flag:
+            att_data['month_name'] = att_data['month'].apply(lambda x: months.get(x))
 
         return att_data
