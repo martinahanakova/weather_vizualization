@@ -47,6 +47,8 @@ class MapWidget(QQuickWidget):
         self.b1 = QPushButton(self)
         self.b1.move(50, 0)
 
+        self.menu = QMenu("Pick an attribute", self)
+
         # create a menu option for each attribute (in connect, lambda is necessary in order to be able to send custom params to function)
         self.aHumidity = QAction("humidity")
         self.aHumidity.triggered.connect(lambda: self.clicked("humidity"))
