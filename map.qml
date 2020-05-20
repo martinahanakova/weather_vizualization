@@ -12,7 +12,7 @@ Rectangle {
 
     Plugin {
         id: osmPlugin
-        name: "osm"
+        name: "mapboxgl"
     }
 
     Map {

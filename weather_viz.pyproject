@@ -1,3 +1,3 @@
 {
-    "files": ["main_widget.py","table_model.py","windrose_plot.py","weather_viz.py","detail_interaction.ui","detail_window.py","spiral.py","humidity_plot.py","main_window.py","detail_widget.py"]
+    "files": ["main_widget.py","table_model.py","windrose_plot.py","weather_viz.py","detail_interaction.ui","detail_window.py","spiral.py","humidity_plot.py","main_window.py","detail_widget.py","map.qml"]
 }
