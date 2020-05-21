@@ -44,7 +44,7 @@ class MapWidget(QQuickWidget):
             value = values[i]
             color = colors[i]
 
-            model.appendMarker({"position": geo_coordinates, "color": color, "name": name, "value": value, "date": self.currentDate})
+            model.append_marker({"position": geo_coordinates, "color": color, "name": name, "value": value, "date": self.currentDate})
 
         self.interface()
 
