@@ -3,7 +3,7 @@ from PySide2.QtGui import QKeySequence
 from PySide2.QtWidgets import QMainWindow, QAction
 
 
-class DetailWindow(QMainWindow):
+class VisualizationWindow(QMainWindow):
     def __init__(self, widget, city):
         QMainWindow.__init__(self)
 

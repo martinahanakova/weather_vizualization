@@ -56,6 +56,7 @@ Rectangle {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.WhatsThisCursor
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                                 ToolTip.text: qsTr("Double-click to open detail window")
 
@@ -68,8 +69,13 @@ Rectangle {
                                     parent.opacity = 0.7
                                     ToolTip.visible = false
                                 }
-                                onDoubleClicked: {
-                                  markermodel.open_detail(model.name_marker)
+                                onClicked: {
+                                    if (mouse.button === Qt.RightButton) {
+                                        markermodel.open_visualization(model.name_marker)
+                                    }
+                                    if (mouse.button === Qt.LeftButton) {
+                                        markermodel.open_detail(model.name_marker)
+                                    }
                                 }
                         }
                 }

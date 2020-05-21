@@ -16,14 +16,14 @@ class VisualizationWidget(QWidget):
         self.grid_layout = QGridLayout()
 
         # Creating Chart 1
-        self.pressure_spiral = Spiral(data, city)
-        self.set_widget("Popis", "tu vloz objekt chartu", 0)
+        self.pressure_spiral = Spiral(data, city, 'pressure')
+        self.set_widget("Popis", self.pressure_spiral, 0, 0)
 
         # Creating Chart 2 Plot
         self.windrose_plot = WindrosePlot(data, city)
-        self.set_widget("Popis", "tu vloz objekt chartu", 1)
+        self.set_widget("Popis", self.windrose_plot, 1, 0)
 
-    def set_widget(self, heading, plot, grid_pos):
+    def set_widget(self, heading, plot, grid_pos_1, grid_pos_2):
         layout = QVBoxLayout()
         size = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
@@ -37,4 +37,4 @@ class VisualizationWidget(QWidget):
         plot.setSizePolicy(size)
         layout.addWidget(plot)
 
-        self.grid_layout.addLayout(layout, grid_pos)
+        self.grid_layout.addLayout(layout, grid_pos_1, grid_pos_2)

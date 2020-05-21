@@ -91,12 +91,12 @@ class MapWidget(QQuickWidget):
         return date_picker
 
     def set_date_pickers(self, slider):
-        # Set Date Picker for Start of Slider
+        # Set Date Picker for Start of self.slider
         date_picker_start = self.create_date_picker(0)
         date_picker_start.setToolTip("Select the BEGINNING of the time period from which the data is displayed")
         date_picker_start.move(slider.property("x") - date_picker_start.width() - 30, slider.property("y"))
 
-        # Set Date Picker for End of Slider
+        # Set Date Picker for End of self.slider
         date_picker_end = self.create_date_picker(-1)
         date_picker_end.setToolTip("Select the END of the time period from which the data is displayed")
         date_picker_end.move(slider.property("x") + slider.property("width") + 30, slider.property("y"))
@@ -121,28 +121,28 @@ class MapWidget(QQuickWidget):
         self.attribute_button.setMenu(self.menu)
         self.attribute_button.resize(self.menu.width()+50, self.attribute_button.height())
 
-        # Get Slider from QML File
-        slider = self.rootObject().findChild(QObject, "slider")
+        # Get self.slider from QML File
+        self.slider = self.rootObject().findChild(QObject, "slider")
 
         # Set Date Pickers
-        self.date_picker_start, self.date_picker_end = self.set_date_pickers(slider)
+        self.date_picker_start, self.date_picker_end = self.set_date_pickers(self.slider)
 
-        self.date_picker_start.dateChanged.connect(lambda: self.change_date(slider, self.self.date_picker_start, self.date_picker_end))
-        self.date_picker_end.dateChanged.connect(lambda: self.change_date(slider, self.self.date_picker_start, self.date_picker_end))
+        self.date_picker_start.dateChanged.connect(lambda: self.change_date(self.slider, self.self.date_picker_start, self.date_picker_end))
+        self.date_picker_end.dateChanged.connect(lambda: self.change_date(self.slider, self.self.date_picker_start, self.date_picker_end))
 
         # Label Holding the Current Date Selected by User
-        self.date_label.move(slider.property("x") + (slider.width() / 2) - 100, slider.property("y") + 30)
+        self.date_label.move(self.slider.property("x") + (self.slider.width() / 2) - 100, self.slider.property("y") + 30)
         self.date_label.adjustSize()
 
         # Set Buttons Position
         self.previous_button.setStyleSheet("color: black")
-        self.previous_button.move(slider.property("x"), slider.property("y") + 50)
+        self.previous_button.move(self.slider.property("x"), self.slider.property("y") + 50)
         self.previous_button.adjustSize()
         self.next_button.setStyleSheet("color: black")
-        self.next_button.move(slider.property("x") + slider.width() - 70, slider.property("y") + 50)
+        self.next_button.move(self.slider.property("x") + self.slider.width() - 70, self.slider.property("y") + 50)
         self.next_button.adjustSize()
 
-        jump_label = QLabel("slider jump (in days): ", self)
+        jump_label = QLabel("self.slider jump (in days): ", self)
         jump_label.setStyleSheet("color: black")
         jump_label.move(self.date_label.x(), self.date_label.y() + 40)
         jump_label.adjustSize()
@@ -150,7 +150,7 @@ class MapWidget(QQuickWidget):
         self.jump_value = QLineEdit(self)
         self.jump_value.move(jump_label.x() + jump_label.width(), jump_label.y() - 5)
         self.jump_value.resize(35, self.jump_value.height())
-        self.jump_value.editingFinished.connect(lambda: slider.setProperty("stepSize", self.jump_value.text()))
+        self.jump_value.editingFinished.connect(lambda: self.slider.setProperty("stepSize", self.jump_value.text()))
 
         agg_label = QLabel(self)
         agg_label.setStyleSheet("color: black")
@@ -165,12 +165,11 @@ class MapWidget(QQuickWidget):
 
         # Initialize Visualization
         self.humidity_attribute.trigger()
-        self.change_date(slider, self.date_picker_start, self.date_picker_end)
+        self.change_date(self.slider, self.date_picker_start, self.date_picker_end)
 
     def on_button_clicked(self, action):
         jump_value = int(self.jump_value.text())
-
-        slider.property("value") +- stepSize
+        slider_value = int(self.slider.property("value"))
 
         current_date = pandas.to_datetime(self.currentDate)
 
@@ -179,15 +178,12 @@ class MapWidget(QQuickWidget):
 
         if action == "next":
             if current_date + datetime.timedelta(days=jump_value) <= end_date:
-                current_date = current_date + datetime.timedelta(days=jump_value)
+                self.slider.setProperty("value", slider_value + jump_value)
+                self.update_date(int(self.slider.property("value")))
         elif action == "previous":
             if current_date - datetime.timedelta(days=jump_value) >= start_date:
-                current_date = current_date - datetime.timedelta(days=jump_value)
-
-        self.currentDate = str(current_date)
-        #self.update_date()
-
-        self.update_date(int(slider.property("value")))
+                self.slider.setProperty("value", slider_value - jump_value)
+                self.update_date(int(self.slider.property("value")))
 
     @Slot(int)
     def update_date(self, value):
@@ -198,7 +194,7 @@ class MapWidget(QQuickWidget):
     # TODO: visualise time series data, not just int created by aggregation
     # TODO: create setting of visualised time period for user
 
-    # calculates the difference (in days) between start date and end date and rescales the slider
+    # calculates the difference (in days) between start date and end date and rescales the self.slider
     def set_agg(self, value):
         self.aggregation = int(value)
         self.clicked(self.attribute_button.text())
