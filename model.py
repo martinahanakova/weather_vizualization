@@ -5,14 +5,12 @@ from detail_window import DetailWindow
 
 
 class MarkerModel(QAbstractListModel):
-    PositionRole, ColorRole, NameRole, ValueRole = range(Qt.UserRole, Qt.UserRole + 4)
+    PositionRole, ColorRole, NameRole, ValueRole, ColorRole, DateRole = range(Qt.UserRole, Qt.UserRole + 6)
 
     def __init__(self, data, parent=None):
         super(MarkerModel, self).__init__(parent)
         self._markers = []
         self.model_data = data
-
-        self.dialog_1 = None
 
     @Slot(str)
     def open_detail(self, city):
@@ -39,11 +37,18 @@ class MarkerModel(QAbstractListModel):
                 return self._markers[index.row()]["name"]
             elif role == MarkerModel.ValueRole:
                 return self._markers[index.row()]["value"]
+            elif role == MarkerModel.ColorRole:
+                return self._markers[index.row()]["color"]
+            elif role == MarkerModel.DateRole:
+                return self._markers[index.row()]["date"]
 
-    def set_data(self, index, value):
+    def setData(self, index, value, color, role=Qt.DisplayRole):
         self._markers[index]["value"] = value
+        self._markers[index]["color"] = color
+
         new_index = self.createIndex(index, index)
         self.dataChanged.emit(new_index, new_index, [])
+
         return True
 
     def roleNames(self):
@@ -51,7 +56,9 @@ class MarkerModel(QAbstractListModel):
             MarkerModel.PositionRole: b"position_marker",
             MarkerModel.ColorRole: b"color_marker",
             MarkerModel.NameRole: b"name_marker",
-            MarkerModel.ValueRole: b"value_marker"}
+            MarkerModel.ValueRole: b"value_marker",
+            MarkerModel.DateRole: b"dater_marker"
+        }
 
     def append_marker(self, marker):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())

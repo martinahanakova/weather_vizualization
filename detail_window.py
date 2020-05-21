@@ -11,7 +11,7 @@ class DetailWindow(QMainWindow):
 
         self.setCentralWidget(widget)
 
-        ## Exit QAction
+        # Exit QAction
         exit_action = QAction("Exit", self)
         exit_action.setShortcut(QKeySequence.Quit)
         exit_action.triggered.connect(self.close)

@@ -1,4 +1,6 @@
-import QtQuick 2.11
+
+
+import QtQuick 2.14
 import QtPositioning 5.11
 import QtLocation 5.11
 import QtDataVisualization 1.2
@@ -9,7 +11,6 @@ Rectangle {
     id:rectangle
     width: 640
     height: 480
-
     Plugin {
         id: osmPlugin
         name: "osm"
@@ -20,20 +21,24 @@ Rectangle {
         anchors.fill: parent
         plugin: osmPlugin
         zoomLevel: 1
-
+        minimumTilt: 10
+        maximumTilt: 80
         MapItemView{
             id: mapItemView
-            model: marker_model
+            model: markermodel
+
             delegate: MapQuickItem {
                 zoomLevel: 6
                 coordinate: model.position_marker
                 anchorPoint.x: rectangle2.width/2
                 anchorPoint.y: rectangle2.height/2
+
                 sourceItem:
                     Rectangle {
                         id: rectangle2
                         width: 50
                         height: 100
+
                         color: model.color_marker
                         border.color: "black"
                         border.width: 5
@@ -64,11 +69,32 @@ Rectangle {
                                     ToolTip.visible = false
                                 }
                                 onDoubleClicked: {
-                                  marker_model.open_detail(model.name_marker)
+                                  console.log("Clicked")
+                                  markermodel.open_detail(model.name_marker)
                                 }
+
                         }
                     }
+
             }
+        }
+
+        Slider {
+            objectName: "slider"
+            x:  x + 700
+            width: 1000
+            from: 1
+            to: 100
+            stepSize: 1
+            live: true
+            onMoved:  MapWidget.updateDate(value)
+
+            MouseArea {
+                ToolTip.text: qsTr("hello there") // shows current value of the slider in the tooltip
+                visible: true
+            }
+
         }
     }
 }
+
