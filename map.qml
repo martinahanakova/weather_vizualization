@@ -78,14 +78,7 @@ Rectangle {
                                   console.log("Clicked")
                                   markermodel.open_detail(model.name_marker)
                                 }
-                                /*
-                                TODO: on clicked - duplicate the view somewhere (top part of screen or window)
-                                - needed for scenario of comparison of two different cities
-                                - user will be able to open multiple cities views at same time and compare them
 
-                                TODO: on double clicked - open Maťuška´s detail window for the city
-                                - trigger either here or in map_widget by a function connected to a button
-                                */
                             }
                 }
 
@@ -98,10 +91,10 @@ Rectangle {
             width: 1000
             from: 1
             to: 100
-            value: 25
-            stepSize: 5
+          //  value: 25
+            stepSize: 1
             live: true // live update of the value attribute value
-
+            onMoved:  MapWidget.updateDate(value)
 
 
 
@@ -109,22 +102,6 @@ Rectangle {
                 ToolTip.text: qsTr("hello there") // shows current value of the slider in the tooltip
                 visible: true
             }
-
-
-            /*
-            hoverEnabled: true
-
-            MouseArea {
-            //    anchors.fill: parent  - blocks slider functionality
-                ToolTip.text: qsTr("Slide to define time interval for shown values")
-                onEntered: {
-                //    ToolTip.visible = true
-                }
-                onExited: {
-                //    ToolTip.visible = false
-                }
-            }
-            */
 
         }
     }
