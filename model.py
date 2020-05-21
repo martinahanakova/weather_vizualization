@@ -12,6 +12,8 @@ class MarkerModel(QAbstractListModel):
         self._markers = []
         self.model_data = data
 
+        self.dialog_1 = None
+
     @Slot(str)
     def open_detail(self, city):
 

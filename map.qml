@@ -1,5 +1,3 @@
-
-
 import QtQuick 2.14
 import QtPositioning 5.11
 import QtLocation 5.11
@@ -12,17 +10,18 @@ Rectangle {
     width: 640
     height: 480
     Plugin {
-        id: osmPlugin
-        name: "osm"
+        id: mapboxglPlugin
+        name: "mapboxgl"
     }
 
     Map {
         id: map
         anchors.fill: parent
-        plugin: osmPlugin
+        plugin: mapboxglPlugin
         zoomLevel: 1
         minimumTilt: 10
         maximumTilt: 80
+
         MapItemView{
             id: mapItemView
             model: markermodel
@@ -33,8 +32,7 @@ Rectangle {
                 anchorPoint.x: rectangle2.width/2
                 anchorPoint.y: rectangle2.height/2
 
-                sourceItem:
-                    Rectangle {
+                sourceItem: Rectangle {
                         id: rectangle2
                         width: 50
                         height: 100
@@ -72,9 +70,8 @@ Rectangle {
                                   console.log("Clicked")
                                   markermodel.open_detail(model.name_marker)
                                 }
-
                         }
-                    }
+                }
 
             }
         }
@@ -87,13 +84,12 @@ Rectangle {
             to: 100
             stepSize: 1
             live: true
-            onMoved:  MapWidget.updateDate(value)
+            onMoved:  MapWidget.update_date(value)
 
             MouseArea {
                 ToolTip.text: qsTr("hello there") // shows current value of the slider in the tooltip
                 visible: true
             }
-
         }
     }
 }
