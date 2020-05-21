@@ -38,7 +38,7 @@ class DetailWidget(QWidget):
         self.temperature_spiral = Spiral(data, city, 'temperature')
         self.set_weather_widget("Temperature in °K", self.temperature_spiral, 1, 1)
 
-        # Intearction Panel Layout
+        # Interaction Panel Layout
         self.interaction_panel = QWidget()
         self.interaction_panel = loader.load(file)
 

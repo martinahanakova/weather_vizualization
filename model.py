@@ -2,6 +2,8 @@ from PySide2.QtCore import (QAbstractListModel, Qt, QModelIndex, Slot)
 
 from detail_widget import DetailWidget
 from detail_window import DetailWindow
+from visualization_widget import VisualizationWidget
+from visualization_window import VisualizationWindow
 
 
 class MarkerModel(QAbstractListModel):
@@ -25,6 +27,12 @@ class MarkerModel(QAbstractListModel):
             widget1 = DetailWidget(self.model_data, city)
             self.dialog_1 = DetailWindow(widget1, city)
             self.dialog_1.show()
+
+    @Slot(str)
+    def open_visualization(self, city):
+        widget = VisualizationWidget(self.model_data, city)
+        self.visualization = VisualizationWindow(widget, city)
+        self.visualization.show()
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._markers)

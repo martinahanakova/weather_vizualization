@@ -46,6 +46,8 @@ Rectangle {
                         Text {
                             anchors.bottom: parent.top
                             text: model.name_marker +"\n"+ model.value_marker
+                            font.bold: true
+                            font.pointSize: 40
                             visible: true
                         }
 
@@ -54,6 +56,7 @@ Rectangle {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.WhatsThisCursor
+                                acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                                 ToolTip.text: qsTr("Double-click to open detail window")
 
@@ -66,9 +69,13 @@ Rectangle {
                                     parent.opacity = 0.7
                                     ToolTip.visible = false
                                 }
-                                onDoubleClicked: {
-                                  console.log("Clicked")
-                                  markermodel.open_detail(model.name_marker)
+                                onClicked: {
+                                    if (mouse.button === Qt.RightButton) {
+                                        markermodel.open_visualization(model.name_marker)
+                                    }
+                                    if (mouse.button === Qt.LeftButton) {
+                                        markermodel.open_detail(model.name_marker)
+                                    }
                                 }
                         }
                 }
@@ -78,8 +85,8 @@ Rectangle {
 
         Slider {
             objectName: "slider"
-            x:  x + 700
-            width: 1000
+            x:  400
+            width: 800
             from: 1
             to: 100
             stepSize: 1

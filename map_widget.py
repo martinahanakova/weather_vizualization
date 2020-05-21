@@ -1,12 +1,16 @@
 from PySide2.QtCore import QUrl, QDate, QObject, Slot
 from PySide2.QtGui import QColor
-from PySide2.QtWidgets import QLabel, QPushButton, QMenu, QAction, QCalendarWidget
+from PySide2.QtWidgets import QLabel, QPushButton, QMenu, QAction, QCalendarWidget, QAbstractButton
 from PySide2.QtWidgets import QDateTimeEdit, QLineEdit
 from PySide2.QtQuickWidgets import QQuickWidget
 from PySide2.QtPositioning import QGeoCoordinate
 
 import os
 import numpy
+import pandas
+import datetime
+
+from functools import partial
 
 from model import MarkerModel
 
@@ -19,6 +23,7 @@ class MapWidget(QQuickWidget):
         self.model = model
 
         self.attribute_button = QPushButton(self)
+        self.attribute_button.setStyleSheet("color: black")
         self.menu = QMenu("Pick an attribute", self)
 
         # Create Menu Options
@@ -42,7 +47,16 @@ class MapWidget(QQuickWidget):
         # get first date of dataset in yy-mm-dd
         self.currentDate = self.uniqueDates[0]
 
-        # TODO: dynamically specify aggregation interval based on user input
+        # Set Labels
+        self.date_label = QLabel("selected date: " + str(self.currentDate).replace("-", "."), self)
+        self.date_label.setStyleSheet("color: black")
+
+        # Set Previous and Next Buttons
+        self.previous_button = QPushButton("Previous", self)
+        self.next_button = QPushButton("Next", self)
+
+        self.previous_button.clicked.connect(partial(self.on_button_clicked, "previous"))
+        self.next_button.clicked.connect(partial(self.on_button_clicked, "next"))
 
         values = self.get_values(self.data, "humidity")
         colors = self.get_colors(self.data, "humidity")
@@ -77,12 +91,12 @@ class MapWidget(QQuickWidget):
         return date_picker
 
     def set_date_pickers(self, slider):
-        # Set Date Picker for Start of Slider
+        # Set Date Picker for Start of self.slider
         date_picker_start = self.create_date_picker(0)
         date_picker_start.setToolTip("Select the BEGINNING of the time period from which the data is displayed")
         date_picker_start.move(slider.property("x") - date_picker_start.width() - 30, slider.property("y"))
 
-        # Set Date Picker for End of Slider
+        # Set Date Picker for End of self.slider
         date_picker_end = self.create_date_picker(-1)
         date_picker_end.setToolTip("Select the END of the time period from which the data is displayed")
         date_picker_end.move(slider.property("x") + slider.property("width") + 30, slider.property("y"))
@@ -107,58 +121,83 @@ class MapWidget(QQuickWidget):
         self.attribute_button.setMenu(self.menu)
         self.attribute_button.resize(self.menu.width()+50, self.attribute_button.height())
 
-        # Get Slider from QML File
-        slider = self.rootObject().findChild(QObject, "slider")
+        # Get self.slider from QML File
+        self.slider = self.rootObject().findChild(QObject, "slider")
 
-        date_picker_start, date_picker_end = self.set_date_pickers(slider)
+        # Set Date Pickers
+        self.date_picker_start, self.date_picker_end = self.set_date_pickers(self.slider)
 
-        # label holding the current date selected by user via slider handle
-        self.labelDate = QLabel(self)
-        self.labelDate.move(slider.property("x") + (slider.width() / 2) - 100, slider.property("y") + 30)
-        self.labelDate.setText("selected date: " + str(self.currentDate).replace("-", "."))
-        self.labelDate.adjustSize()
+        self.date_picker_start.dateChanged.connect(lambda: self.change_date(self.slider, self.self.date_picker_start, self.date_picker_end))
+        self.date_picker_end.dateChanged.connect(lambda: self.change_date(self.slider, self.self.date_picker_start, self.date_picker_end))
 
-        # triggers an update of slider date range values everz time either datepicker value is changed
-        date_picker_start.dateChanged.connect(lambda: self.change_date(slider, date_picker_start, date_picker_end))
-        date_picker_end.dateChanged.connect(lambda: self.change_date(slider, date_picker_start, date_picker_end))
+        # Label Holding the Current Date Selected by User
+        self.date_label.move(self.slider.property("x") + (self.slider.width() / 2) - 100, self.slider.property("y") + 30)
+        self.date_label.adjustSize()
 
-        self.labelJumpInput = QLabel(self)
-        self.labelJumpInput.move(self.labelDate.x(), self.labelDate.y() + 40)
-        self.labelJumpInput.setText("slider jump (in days): ")
-        self.labelJumpInput.adjustSize()
+        # Set Buttons Position
+        self.previous_button.setStyleSheet("color: black")
+        self.previous_button.move(self.slider.property("x"), self.slider.property("y") + 50)
+        self.previous_button.adjustSize()
+        self.next_button.setStyleSheet("color: black")
+        self.next_button.move(self.slider.property("x") + self.slider.width() - 70, self.slider.property("y") + 50)
+        self.next_button.adjustSize()
 
-        self.jumpInput = QLineEdit(self)
-        self.jumpInput.move(self.labelJumpInput.x() + self.labelJumpInput.width(), self.labelJumpInput.y() - 5)
-        self.jumpInput.resize(35, self.jumpInput.height())
-        self.jumpInput.editingFinished.connect(lambda: slider.setProperty("stepSize", self.jumpInput.text()))
+        jump_label = QLabel("self.slider jump (in days): ", self)
+        jump_label.setStyleSheet("color: black")
+        jump_label.move(self.date_label.x(), self.date_label.y() + 40)
+        jump_label.adjustSize()
 
-        self.labelAggInput = QLabel(self)
-        self.labelAggInput.move(self.labelDate.x(), self.jumpInput.y() + 40)
-        self.labelAggInput.setText("mean (in days): ")
-        self.labelAggInput.adjustSize()
+        self.jump_value = QLineEdit(self)
+        self.jump_value.move(jump_label.x() + jump_label.width(), jump_label.y() - 5)
+        self.jump_value.resize(35, self.jump_value.height())
+        self.jump_value.editingFinished.connect(lambda: self.slider.setProperty("stepSize", self.jump_value.text()))
 
-        self.aggInput = QLineEdit(self)
-        self.aggInput.move(self.jumpInput.x(), self.labelAggInput.y() - 5)
-        self.aggInput.resize(35, self.aggInput.height())
-        self.aggInput.editingFinished.connect(lambda:  self.setAgg(self.aggInput.text()))
+        agg_label = QLabel(self)
+        agg_label.setStyleSheet("color: black")
+        agg_label.move(self.date_label.x(), self.jump_value.y() + 40)
+        agg_label.setText("mean (in days): ")
+        agg_label.adjustSize()
 
-        # lastly, initialize visualisation with specific attribute
+        agg_value = QLineEdit(self)
+        agg_value.move(self.jump_value.x(), agg_label.y() - 5)
+        agg_value.resize(35, agg_value.height())
+        agg_value.editingFinished.connect(lambda:  self.set_agg(agg_value.text()))
+
+        # Initialize Visualization
         self.humidity_attribute.trigger()
-        self.change_date(slider, date_picker_start, date_picker_end)
+        self.change_date(self.slider, self.date_picker_start, self.date_picker_end)
+
+    def on_button_clicked(self, action):
+        jump_value = int(self.jump_value.text())
+        slider_value = int(self.slider.property("value"))
+
+        current_date = pandas.to_datetime(self.currentDate)
+
+        start_date = self.date_picker_start.date().toPython()
+        end_date = self.date_picker_end.date().toPython()
+
+        if action == "next":
+            if current_date + datetime.timedelta(days=jump_value) <= end_date:
+                self.slider.setProperty("value", slider_value + jump_value)
+                self.update_date(int(self.slider.property("value")))
+        elif action == "previous":
+            if current_date - datetime.timedelta(days=jump_value) >= start_date:
+                self.slider.setProperty("value", slider_value - jump_value)
+                self.update_date(int(self.slider.property("value")))
 
     @Slot(int)
     def update_date(self, value):
         self.currentDate = self.uniqueDates[value - 1]
-        self.labelDate.setText("selected date: " + str(self.currentDate).replace("-", "."))
+        self.date_label.setText("selected date: " + str(self.currentDate).replace("-", "."))
         self.clicked(self.attribute_button.text())
 
-    # TODO: add bottom interaction bar for choosing the data time interval
     # TODO: visualise time series data, not just int created by aggregation
     # TODO: create setting of visualised time period for user
 
-    # calculates the difference (in days) between start date and end date and rescales the slider
-    def setAgg(self, value):
+    # calculates the difference (in days) between start date and end date and rescales the self.slider
+    def set_agg(self, value):
         self.aggregation = int(value)
+        self.clicked(self.attribute_button.text())
 
     def change_date(self, slider, date_picker_start, date_picker_end):
         dif = self.uniqueDates\
@@ -170,11 +209,8 @@ class MapWidget(QQuickWidget):
         self.attribute_button.setText(attribute)
         values = self.get_values(self.data, attribute)
 
-        # TODO: fix date and interval
-
         colors = self.get_colors(self.data, attribute)
 
-        print(attribute)
         for i in range(0, len(values)):
             self.model.setData(i, values[i], colors[i], MarkerModel.ValueRole)
 
@@ -192,13 +228,16 @@ class MapWidget(QQuickWidget):
 
         return names
 
-    # TODO: aggregate all days based on self.aggregation value, not just current day
-
     # creates an ordered list of aggregated values of a specified attribute
     def get_values(self, data, attribute):
-        tmp = data[data['datetime'].str.contains(self.currentDate)]
+        data['datetime'] = pandas.to_datetime(data['datetime'])
 
-        # groupby sorts rows by specified attribute by default
+        start_date = pandas.to_datetime(self.currentDate)
+        end_date = start_date + datetime.timedelta(days=self.aggregation)
+
+        tmp = data[data['datetime'] >= start_date]
+        tmp = tmp[tmp['datetime'] <= end_date]
+
         values = tmp.groupby('city').apply(lambda x: x[attribute].mean()).values.round(2).tolist()
 
         return values
