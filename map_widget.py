@@ -1,6 +1,7 @@
-from PySide2.QtCore import QDateTime, Qt, QUrl, QModelIndex
+from PySide2.QtCore import QDateTime, Qt, QUrl, QModelIndex, QDate, QObject
 from PySide2.QtGui import QPainter, QColor
-from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QPushButton, QMenu, QAction)
+from PySide2.QtWidgets import (QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QPushButton, QMenu, QAction, QCalendarWidget)
+from PySide2.QtWidgets import QDateTimeEdit, QGraphicsAnchorLayout
 from PySide2.QtQuickWidgets import QQuickWidget
 from PySide2.QtPositioning import QGeoCoordinate
 
@@ -24,7 +25,9 @@ class MapWidget(QQuickWidget):
 
         positions = self.get_positions(self.data)
         names = self.get_names(self.data)
-        values = self.get_values(self.data, "humidity")
+        self.currentDate = str(self.data.sort_values(by=['datetime']).iloc[0]["datetime"]).split(' ')[0] # get first date of dataset in yy-mm-dd
+        print(self.currentDate)
+        values = self.get_values(self.data, "humidity", 7) # TODO: dynamically specify aggregation interval based on user input
         colors = self.get_colors(self.data, "humidity")
 
         for i in range(0, len(names)):
@@ -34,7 +37,7 @@ class MapWidget(QQuickWidget):
             color = colors[i] # QJS value , needs to be QColor
            # color = QColor(color_tmp[0], color_tmp[1], color_tmp[2], 255)
             #print(positions[i][0], positions[i][1], "green", name)
-            model.appendMarker({"position": geo_coordinates, "color": color, "name": name, "value": value})
+            model.appendMarker({"position": geo_coordinates, "color": color, "name": name, "value": value, "date": self.currentDate})
 
         self.interface()
       #  print(self.get_colors(self.data, "humidity"))
@@ -46,6 +49,8 @@ class MapWidget(QQuickWidget):
 
         self.b1 = QPushButton(self)
         self.b1.move(50, 0)
+
+        self.menu = QMenu("Pick an attribute", self)
 
         # create a menu option for each attribute (in connect, lambda is necessary in order to be able to send custom params to function)
         self.aHumidity = QAction("humidity")
@@ -69,15 +74,47 @@ class MapWidget(QQuickWidget):
         self.b1.resize(self.menu.width()+50,self.b1.height())
 
         self.aHumidity.trigger()
+
+       # self.calBut = QPushButton(self)
+       # self.calBut.move(50, 50)
+      #  self.calendar = QCalendarWidget(self)
+
+        self.slider = self.rootObject().findChild(QObject, "slider") # accessing slider from QML file to position datePickers dynamically
+
+        self.dpStart = self.createDatePicker(0)
+        self.dpStart.setToolTip("Select the BEGINNING of the time period from which the data is displayed")
+        self.dpStart.move(self.slider.property("x") - self.dpStart.width() - 30, self.slider.property("y"))
+        self.dpEnd = self.createDatePicker(-1)
+        self.dpEnd.setToolTip("Select the END of the time period from which the data is displayed")
+        self.dpEnd.move(self.slider.property("x") + self.slider.property("width") + 30, self.slider.property("y"))
+
+        self.labelDate = QLabel(self)
+        self.labelDate.move(self.slider.property("x") + (self.slider.width() / 2) - 100, self.slider.property("y") + 30)
+        self.labelDate.setText("selected date: " + str(self.currentDate) )
+
+       # self.dateEdit.show()
+      #  self.calBut.setCalendar(self.calendar)
     # TODO: add bottom interaction bar for choosing the data time interval
     # TODO: visualise time series data, not just int created bz aggregation -> TODO: create setting of visualised time period for user
-    # TODO: implementation of connect makes it unable to dynamically send button content to clicked(function) - figure out how to do it
+
+    # creates datePicker initialized with specific date from given data, based on index
+    def createDatePicker(self, index):
+        timeTmp = str(self.data.sort_values(by=['datetime']).iloc[index]["datetime"]).split(' ')[0]
+        timeQFormat = timeTmp.split("-")
+        print(timeQFormat)
+        # date is parsed and converted to int to comply with required format of QDate
+        datePicker = QDateTimeEdit(QDate(int(timeQFormat[0]),int(timeQFormat[1]),int(timeQFormat[2])), self)
+        datePicker.setDisplayFormat("yyyy.MM.dd")
+        datePicker.setCalendarPopup(True)
+        datePicker.setCalendarWidget(QCalendarWidget())
+        datePicker.resize(datePicker.width() + 20, datePicker.height())
+        return datePicker
 
     # when button is clicked, changes values in all model items to a different attribute
     def clicked(self, attribute):
         self.b1.setText(attribute)
     #    self.l1.setText("selected attribute: "+attribute)
-        values = self.get_values(self.data, attribute)
+        values = self.get_values(self.data, attribute, "2012-10-01", 7) # TODO: fix date and interval
         colors = self.get_colors(self.data, attribute)
        # self.model.setData(0, values[0], MarkerModel.ValueRole)
         print(attribute)
@@ -91,11 +128,15 @@ class MapWidget(QQuickWidget):
 
     def get_names(self, data):
         tmp = data.drop_duplicates('city').sort_values(by=['city'])
-        names = tmp['city'].tolist()
+        names = tmp['city'].values.tolist()
         return names
 
-    def get_values(self, data, attribute): # creates an ordered list of aggregated values of a specified attribute
-        values = data.groupby('city').apply(lambda x: x[attribute].mean().round(2)).tolist() # groupby sorts rows by specified attribute by default
+    def get_values(self, data, attribute, interval): # creates an ordered list of aggregated values of a specified attribute
+       # tmp = data.filter(like=startDate, axis=0)
+        tmp = data[data['datetime'].str.contains(self.currentDate)]
+        values = tmp.groupby('city').apply(lambda x: x[attribute].mean()).values.round(2).tolist() # groupby sorts rows by specified attribute by default
+        print(self.currentDate)
+        print(values)
         return values
 
     def get_colors(self, data, attribute):

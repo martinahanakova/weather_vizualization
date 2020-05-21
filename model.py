@@ -5,7 +5,7 @@ from detail_window import DetailWindow
 
 
 class MarkerModel(QAbstractListModel):
-    PositionRole, ColorRole, NameRole, ValueRole, ColorRole = range(Qt.UserRole, Qt.UserRole + 5)
+    PositionRole, ColorRole, NameRole, ValueRole, ColorRole, DateRole = range(Qt.UserRole, Qt.UserRole + 6)
 
     def __init__(self, data, parent=None):
         super(MarkerModel, self).__init__(parent)
@@ -36,6 +36,8 @@ class MarkerModel(QAbstractListModel):
                 return self._markers[index.row()]["value"]
             elif role == MarkerModel.ColorRole:
                 return self._markers[index.row()]["color"]
+            elif role == MarkerModel.DateRole:
+                return self._markers[index.row()]["date"]
 
     def setData(self, index, value, color, role=Qt.DisplayRole):
     #    print(self._markers[index]["value"])
@@ -49,7 +51,8 @@ class MarkerModel(QAbstractListModel):
 
     def roleNames(self):
         return {MarkerModel.PositionRole: b"position_marker", MarkerModel.ColorRole: b"color_marker",
-    MarkerModel.NameRole: b"name_marker", MarkerModel.ValueRole: b"value_marker", MarkerModel.ColorRole: b"color_marker"}
+    MarkerModel.NameRole: b"name_marker", MarkerModel.ValueRole: b"value_marker", MarkerModel.ColorRole: b"color_marker",
+    MarkerModel.DateRole: b"dater_marker"}
 
     def appendMarker(self, marker):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())

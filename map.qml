@@ -92,13 +92,26 @@ Rectangle {
             }
         }
 
-        RangeSlider {
+        Slider {
+            objectName: "slider"
             x:  x + 700
             width: 1000
             from: 1
             to: 100
-            first.value: 25
-            second.value: 75
+            value: 25
+            stepSize: 5
+            live: true // live update of the value attribute value
+
+
+
+
+            MouseArea {
+                ToolTip.text: qsTr("hello there") // shows current value of the slider in the tooltip
+                visible: true
+            }
+
+
+            /*
             hoverEnabled: true
 
             MouseArea {
@@ -110,8 +123,9 @@ Rectangle {
                 onExited: {
                 //    ToolTip.visible = false
                 }
-
             }
+            */
+
         }
     }
 }

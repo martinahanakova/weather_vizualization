@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.11.2, 2020-05-16T13:11:52. -->
+<!-- Written by QtCreator 4.11.2, 2020-05-19T21:59:10. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -865,7 +865,10 @@
     <valuelist type="QVariantList" key="Analyzer.Perf.Events">
      <value type="QString">cpu-cycles</value>
     </valuelist>
-    <valuelist type="QVariantList" key="Analyzer.Perf.ExtraArguments"/>
+    <valuelist type="QVariantList" key="Analyzer.Perf.ExtraArguments">
+     <value type="QString">-f</value>
+     <value type="QString">final_data.csv</value>
+    </valuelist>
     <value type="int" key="Analyzer.Perf.Frequency">250</value>
     <valuelist type="QVariantList" key="Analyzer.Perf.RecordArguments">
      <value type="QString">-e</value>
@@ -874,6 +877,8 @@
      <value type="QString">dwarf,4096</value>
      <value type="QString">-F</value>
      <value type="QString">250</value>
+     <value type="QString">-f</value>
+     <value type="QString">final_data.csv</value>
     </valuelist>
     <value type="QString" key="Analyzer.Perf.SampleMode">-F</value>
     <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
@@ -923,9 +928,9 @@
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">windrose_plot</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">PythonEditor.RunConfiguration.C:/Users/Marek/Documents/GitHub/weather_vizualization/windrose_plot.py</value>
     <value type="QString" key="ProjectExplorer.RunConfiguration.BuildKey">C:/Users/Marek/Documents/GitHub/weather_vizualization/windrose_plot.py</value>
-    <value type="QString" key="PythonEditor.RunConfiguation.Interpreter"></value>
+    <value type="QString" key="PythonEditor.RunConfiguation.Interpreter">{1f07980f-88a4-4857-82ff-550589009649}</value>
     <value type="QString" key="PythonEditor.RunConfiguation.Script">C:\Users\Marek\Documents\GitHub\weather_vizualization\windrose_plot.py</value>
-    <value type="QString" key="RunConfiguration.Arguments"></value>
+    <value type="QString" key="RunConfiguration.Arguments">-f final_data.csv</value>
     <value type="bool" key="RunConfiguration.Arguments.multi">false</value>
     <value type="QString" key="RunConfiguration.OverrideDebuggerStartup"></value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -934,7 +939,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/Marek/Documents/GitHub/weather_vizualization</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.9">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
