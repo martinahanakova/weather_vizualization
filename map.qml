@@ -58,7 +58,7 @@ Rectangle {
                                 cursorShape: Qt.WhatsThisCursor
                                 acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-                                ToolTip.text: qsTr("Double-click to open detail window")
+                                ToolTip.text: qsTr("On-left click open detail window.\nOn-right click open charts window.")
 
                                 onEntered: {
                                     parent.opacity = 1
