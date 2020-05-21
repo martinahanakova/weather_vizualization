@@ -1,13 +1,12 @@
-from PySide2.QtCore import QDateTime, Qt, QUrl, QModelIndex, QDate, QObject, Slot
-from PySide2.QtGui import QPainter, QColor
-from PySide2.QtWidgets import QWidget, QHeaderView, QVBoxLayout, QLabel, QSizePolicy, QGridLayout, QPushButton, QMenu, QAction, QCalendarWidget
-from PySide2.QtWidgets import QDateTimeEdit, QGraphicsAnchorLayout, QLineEdit
+from PySide2.QtCore import QUrl, QDate, QObject, Slot
+from PySide2.QtGui import QColor
+from PySide2.QtWidgets import QLabel, QPushButton, QMenu, QAction, QCalendarWidget
+from PySide2.QtWidgets import QDateTimeEdit, QLineEdit
 from PySide2.QtQuickWidgets import QQuickWidget
 from PySide2.QtPositioning import QGeoCoordinate
 
 import os
 import numpy
-import pandas as pd
 
 from model import MarkerModel
 
@@ -30,21 +29,24 @@ class MapWidget(QQuickWidget):
 
         positions = self.get_positions(self.data)
         names = self.get_names(self.data)
-        self.currentDate = self.uniqueDates[0]  # get first date of dataset in yy-mm-dd
-        values = self.get_values(self.data, "humidity") # TODO: dynamically specify aggregation interval based on user input
+
+        # get first date of dataset in yy-mm-dd
+        self.currentDate = self.uniqueDates[0]
+
+        # TODO: dynamically specify aggregation interval based on user input
+
+        values = self.get_values(self.data, "humidity")
         colors = self.get_colors(self.data, "humidity")
 
         for i in range(0, len(names)):
             geo_coordinates = QGeoCoordinate(positions[i][0], positions[i][1])
             name = names[i]
             value = values[i]
-            color = colors[i] # QJS value , needs to be QColor
-           # color = QColor(color_tmp[0], color_tmp[1], color_tmp[2], 255)
-            #print(positions[i][0], positions[i][1], "green", name)
+            color = colors[i]
+
             model.appendMarker({"position": geo_coordinates, "color": color, "name": name, "value": value, "date": self.currentDate})
 
         self.interface()
-      #  print(self.get_colors(self.data, "humidity"))
 
     def interface(self):
         # self.l1 = QLabel(self)
@@ -56,7 +58,8 @@ class MapWidget(QQuickWidget):
 
         self.menu = QMenu("Pick an attribute", self)
 
-        # create a menu option for each attribute (in connect, lambda is necessary in order to be able to send custom params to function)
+        # create a menu option for each attribute
+        # lambda function is necessary in order to be able to send custom params to the function
         self.aHumidity = QAction("humidity")
         self.aHumidity.triggered.connect(lambda: self.clicked("humidity"))
         self.menu.addAction(self.aHumidity)

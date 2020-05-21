@@ -40,19 +40,22 @@ class MarkerModel(QAbstractListModel):
                 return self._markers[index.row()]["date"]
 
     def setData(self, index, value, color, role=Qt.DisplayRole):
-    #    print(self._markers[index]["value"])
         self._markers[index]["value"] = value
         self._markers[index]["color"] = color
-       # print(self._markers[index]["value"])
-        newIndex = self.createIndex(index, index)
-        #print(newIndex)
-        self.dataChanged.emit(newIndex, newIndex, [])
+
+        new_index = self.createIndex(index, index)
+        self.dataChanged.emit(new_index, new_index, [])
+
         return True
 
     def roleNames(self):
-        return {MarkerModel.PositionRole: b"position_marker", MarkerModel.ColorRole: b"color_marker",
-    MarkerModel.NameRole: b"name_marker", MarkerModel.ValueRole: b"value_marker", MarkerModel.ColorRole: b"color_marker",
-    MarkerModel.DateRole: b"dater_marker"}
+        return {
+            MarkerModel.PositionRole: b"position_marker",
+            MarkerModel.ColorRole: b"color_marker",
+            MarkerModel.NameRole: b"name_marker",
+            MarkerModel.ValueRole: b"value_marker",
+            MarkerModel.DateRole: b"dater_marker"
+        }
 
     def appendMarker(self, marker):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
