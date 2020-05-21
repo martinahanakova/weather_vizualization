@@ -4,6 +4,7 @@ from model import MarkerModel
 from map_widget import MapWidget
 from main_window import MainWindow
 
+
 import sys
 import argparse
 import pandas as pd
